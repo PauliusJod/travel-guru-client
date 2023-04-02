@@ -1,0 +1,56 @@
+TestMapTestMapTestMapTestMapTestMapTestMapTestMapTestMapTestMapTestMapTestMapTestMap
+ // const emptyInput = (inputId) => (event) => {
+  //   // , newValue
+  //   const newState = data.map((obj) => {
+  //     if (obj.id === inputId) {
+  //       return { ...obj, value: event.target.value };
+  //     }
+
+  //     // 👇️ otherwise return the object as is
+  //     return obj;
+  //   });
+
+  //   setData(newState);
+  //   console.log(data.id[1].inputValue);
+  //   if (originRef.current.value === "") {
+  //     console.log("aa");
+  //     setIconReturn(1, <FaRegCircle color="#873e23" />);
+  //   } else {
+  //     console.log("cc");
+  //     setIconReturn(1, <FaRegCheckCircle color="#873e23" />);
+  //   }
+  // };
+  // const dataItems = data.map((dat) => <li>{dat.id}</li>);
+
+  // function ShowInputsState() {
+  //   console.log(initialState.id, initialState.inputValue);
+  //   console.log(data.target.id, data.inputValue);
+  //   // const adddd = () => {
+  //   return (
+  //     <>
+  //       {data.id === 1 && data.inputValue === "empty" && (
+  //         <h3>
+  //           <FaRegCircle color="#873e23" />
+  //         </h3>
+  //       )}
+  //       {data.id === 1 && data.inputValue === "Done" && (
+  //         <h3>
+  //           <FaRegCheckCircle color="#873e23" />
+  //         </h3>
+  //       )}
+  //       {data.id === 2 && data.inputValue === "empty" && (
+  //         <h3>
+  //           <FaRegCircle color="#873e23" />
+  //         </h3>
+  //       )}
+  //       {data.id === 2 && data.inputValue === "Done" && (
+  //         <h3>
+  //           <FaRegCheckCircle color="#873e23" />
+  //         </h3>
+  //       )}
+  //     </>
+  //   );
+  //   // };
+  //   // setData(adddd);
+  // }
+TestMapTestMapTestMapTestMapTestMapTestMapTestMapTestMapTestMapTestMapTestMapTestMap
