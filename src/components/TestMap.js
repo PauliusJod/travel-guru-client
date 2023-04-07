@@ -1,44 +1,86 @@
-﻿import React, { useRef, useEffect, useState, createRef } from "react";
-
+﻿import React, { useRef, /*useEffect,*/ useState, createRef } from "react";
+import iconGPS from "../destination.png";
 import {
   useJsApiLoader,
   GoogleMap,
   Marker,
   Autocomplete,
+  // DirectionsService,
   DirectionsRenderer,
+  // PlacesService,
+  InfoWindow,
 } from "@react-google-maps/api";
 import {
-  // Box,
   Button,
   ButtonGroup,
-  // Flex,
-  // HStack,
   IconButton,
-  // Input,
   SkeletonText,
-  // Text,
 } from "@chakra-ui/react";
 import {
   FaLocationArrow,
   FaTimes,
-  FaCircle,
-  FaDotCircle,
   FaRegCircle,
   FaRegCheckCircle,
   FaPlusCircle,
   FaArrowRight,
+  FaWalking,
+  FaCarSide,
 } from "react-icons/fa";
+import { RiRestaurantLine, RiGasStationLine } from "react-icons/ri";
+import { GiBinoculars } from "react-icons/gi";
 
+//TODO:
+//
+// Paspaudimas ant žemėlapio pasirinkti tašką
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+// const divStyle = {
+//   background: `black`,
+//   border: `1px solid #ccc`,
+//   padding: 15,
+// };
 export default function TestMap() {
-  const center = { lat: 54.8985, lng: 23.9036 };
+  const centerPoint = { lat: 54.8985, lng: 23.9036 };
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyAiB_hv59Hb5MQol934V0jK-t9CVbc2JGY", //process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries: ["places"],
   });
-  const [map, setMap] = useState(null);
+  const google = window.google;
+  // console.log(isLoaded.libraries);
+  // console.log(libraries);
+  const [map, setMap] = React.useState(null);
+
+  const [markersArray, setMarkersArray] = useState([]);
+  const [marker, setMarker] = React.useState(null);
+  const [infoWindow, setInfoWindow] = React.useState(null);
+  const [places, setPlaces] = React.useState([]);
   const [directionsResponse, setDirectionsResponse] = useState(null);
-  const [distance, setDistance] = useState("");
-  const [duration, setDuration] = useState("");
+  // const [curretMarkersOnTheMap, setCurretMarkersOnTheMap] = useState(null);
+  //-------- Directions, paths, needs..
+
+  const [rerenderStateForDifferentPath, setRerenderStateForDifferentPath] =
+    useState(null);
+
+  const [rerenderStateForDifferentNeed, setRerenderStateForDifferentNeed] =
+    useState("NONE");
+
+  //--------
+
+  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [originLatLng, setOriginLatLng] = useState(centerPoint);
+  const [travelStyle, setTravelStyle] = useState("DRIVING");
+  // const [distance, setDistance] = useState("");
+  // const [duration, setDuration] = useState("");
+
   const [distancesBetweenPoints, setDistancesBetweenPoints] = useState([]);
   const [isOpen, setIsOpen] = useState([false, false]);
   // console.log("aa", isOpen);
@@ -49,6 +91,9 @@ export default function TestMap() {
       return newState;
     });
   }
+  // const onLoad = (data) => {
+  //   console.log("data: ", data);
+  // };
   const initialState = [
     { id: 1, inputValue: "empty" },
     { id: 2, inputValue: "extra" },
@@ -68,6 +113,9 @@ export default function TestMap() {
   const [waypoints, setWaypoints] = useState([]);
   const [fixedWaypoints, setfixedWaypoints] = useState([]);
 
+  const directionsRendererRef = useRef(null);
+  const [directionsRendererKey, setDirectionsRendererKey] = useState(1);
+
   const originRef = useRef();
   const destiantionRef = useRef();
   React.useEffect(() => {
@@ -78,14 +126,89 @@ export default function TestMap() {
         .map((_, i) => waypoints[i] || createRef())
     );
   }, [arrLength]);
+  // .
+  // .
+  // .
+  // .
+  // .
+  // .
+  // .
 
+  // .
+  // .
+  // .
+
+  const onMapLoad = React.useCallback((map) => {
+    setMap(map);
+  }, []);
+
+  const onMarkerLoad = React.useCallback((marker) => {
+    setMarker(marker);
+  }, []);
+
+  const onMarkerClick = React.useCallback(() => {
+    if (infoWindow !== null) {
+      infoWindow.close();
+    }
+
+    setInfoWindow(
+      new window.google.maps.InfoWindow({
+        content: "Click to find restaurants",
+      })
+    );
+    // console.log("infoWindow ? null");
+    if (infoWindow !== null) {
+      // console.log("infoWindow != null");
+      infoWindow.open(map, marker);
+    }
+  }, [infoWindow, map, marker]);
+
+  const onInfoWindowClose = React.useCallback(() => {
+    if (infoWindow !== null) {
+      infoWindow.close();
+    }
+  }, [infoWindow]);
+
+  const onInfoWindowClick = React.useCallback(() => {
+    // console.log("aaaaaaaaaaaaa");
+    const placesService = new window.google.maps.places.PlacesService(map);
+    // console.log("placesService:", placesService);
+    // console.log("marker.getPosition():", marker.getPosition());
+    placesService.nearbySearch(
+      {
+        location: marker.getPosition(),
+        radius: 5000,
+        type: "restaurant",
+      },
+      (results, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+          setPlaces(results);
+          // console.log("results:", results);
+        }
+      }
+    );
+
+    infoWindow.close();
+  }, [infoWindow, map, marker]);
+
+  // .
+  // .
+  // .
+  // .
+  // .
+  // .
+  // .
+
+  // .
+  // .
+  // .
   // console.log(waypoints);
 
   function testPrint() {
     const waypts = [];
     waypoints.map((item) => {
       if (item.current === null) {
-        return;
+        return item;
       } else {
         waypts.push({
           location: item.current.value,
@@ -96,8 +219,14 @@ export default function TestMap() {
       }
     });
     setfixedWaypoints(waypts);
+    return waypts;
     // console.log("waypts", waypts);
   }
+
+  const handleTravelTypeChange = (type) => (event) => {
+    setTravelStyle(type);
+    return type;
+  };
   //Užduotis
   //Ant handleChoosenCountry -> gauti tos šalies miestus iš GOOGLE Maps API į -> console.log();
 
@@ -148,34 +277,43 @@ export default function TestMap() {
     });
     // console.log(extraInputs[0]);
   };
+
+  //Warning: Each child in a list should have a unique "key" prop
   const ShowInputsState = (data) => {
-    return Object.keys(data).map((key) => {
-      // eslint-disable-next-line
+    return Object.keys(data).map((key, id) => {
       return Array.isArray(data) && data[key].inputValue === "Done" ? (
-        <div className="container-small left icons">
+        <div className="container-small left icons" key={id}>
           <FaRegCheckCircle
+            key={id}
             color="#177a23" //"#1f4b56"
             className={data[key].id}
             value={data[key].inputValue}
           />
         </div>
       ) : data[key].inputValue === "empty" ? (
-        <div className="container-small left icons">
+        <div className="container-small left icons" key={id}>
           <FaRegCircle
+            key={id}
             color="#550a0f"
             className={data[key].id}
             value={data[key].inputValue}
           />
         </div>
       ) : data[key].inputValue === "extra" ? (
-        <div className="container-small left icons">
-          <FaArrowRight
-            color="#177a23" //"#873e23"
-            className={data[key].id}
-            value={data[key].inputValue}
-          />
-        </div>
+        extraInputs.length <= 7 ? (
+          <div className="container-small left icons" key={id}>
+            <FaArrowRight
+              key={id}
+              color="#177a23" //"#873e23"
+              className={data[key].id}
+              value={data[key].inputValue}
+            />
+          </div>
+        ) : (
+          <></>
+        )
       ) : (
+        // </div>
         <></>
       );
     });
@@ -184,24 +322,239 @@ export default function TestMap() {
     return <SkeletonText />;
   }
 
+  const directionsRendererCallback = (directionsRenderer) => {
+    console.log("directionsRenderer", directionsRenderer);
+    directionsRendererRef.current = directionsRenderer;
+    if (directionsRenderer !== null) {
+      // clean up map direction points
+      if (markersArray !== null) {
+        console.log("markersArray", markersArray);
+        for (let i = 0; i < markersArray.length; i++) {
+          for (let j = 0; j < markersArray[i].length; j++) {
+            const element = markersArray[i][j];
+            // console.log(element);
+            element.setMap(null);
+          }
+        }
+      }
+      // const markerIcon = {
+      //   url: "travel-guru-client/src/gps.png", // URL of the icon image
+      //   scaledSize: new window.google.maps.Size(30, 30), // size of the icon
+      //   origin: new window.google.maps.Point(0, 0), // origin of the icon (usually 0,0)
+      //   anchor: new window.google.maps.Point(15, 15), // anchor point of the icon (where it will be placed on the map)
+      // };
+      if (
+        rerenderStateForDifferentPath !== null &&
+        rerenderStateForDifferentNeed !== "NONE"
+      ) {
+        const pathIndex = rerenderStateForDifferentPath;
+        const arr = [];
+        var index = 0;
+        const onelegArray = [];
+        const waypoints =
+          directionsRenderer.getDirections().routes[0].legs[pathIndex].steps;
+        switch (rerenderStateForDifferentNeed) {
+          case "RESTAURANT":
+            waypoints.forEach((waypoint) => {
+              const marker = new window.google.maps.Marker(
+                {
+                  position: waypoint.end_location,
+                  clickable: true,
+                  draggable: false,
+                  map: directionsRenderer.getMap(),
+                  title: `Step ${index + 1}`,
+                  label: {
+                    text: `${index + 1}`,
+                    color: "black",
+                  },
+                  // icon: markerIcon,
+                },
+                onMarkerClick
+              );
+              index = index + 1;
+              onelegArray.push(marker);
+              marker.addListener("click", () => {
+                setSelectedMarker(index);
+              });
+            });
+
+            arr.push(onelegArray);
+            setMarkersArray(arr);
+
+            return console.log("RESTAURANT");
+          case "SIGNSEEING":
+            waypoints.forEach((waypoint) => {
+              const marker = new window.google.maps.Marker(
+                {
+                  position: waypoint.end_location,
+                  clickable: true,
+                  draggable: false,
+                  map: directionsRenderer.getMap(),
+                  title: `Step ${index + 1}`,
+                  label: {
+                    text: `${index + 1}`,
+                    color: "white",
+                  },
+                },
+                onMarkerClick
+              );
+              index = index + 1;
+              onelegArray.push(marker);
+              marker.addListener("click", () => {
+                setSelectedMarker(index);
+              });
+            });
+
+            arr.push(onelegArray);
+            setMarkersArray(arr);
+            return console.log("SIGNSEEING");
+          case "GASSTATION":
+            waypoints.forEach((waypoint) => {
+              const marker = new window.google.maps.Marker(
+                {
+                  position: waypoint.end_location,
+                  clickable: true,
+                  draggable: false,
+                  map: directionsRenderer.getMap(),
+                  title: `Step ${index + 1}`,
+                  label: {
+                    text: `${index + 1}`,
+                    color: "white",
+                  },
+                },
+                onMarkerClick
+              );
+              index = index + 1;
+              onelegArray.push(marker);
+              marker.addListener("click", () => {
+                setSelectedMarker(index);
+              });
+            });
+
+            arr.push(onelegArray);
+            setMarkersArray(arr);
+            return console.log("GASSTATION");
+          default:
+            waypoints.forEach((waypoint) => {
+              const marker = new window.google.maps.Marker(
+                {
+                  position: waypoint.end_location,
+                  clickable: true,
+                  draggable: false,
+                  map: directionsRenderer.getMap(),
+                  title: `Step ${index + 1}`,
+                  label: {
+                    text: `${index + 1}`,
+                    color: "white",
+                  },
+                },
+                onMarkerClick
+              );
+              index = index + 1;
+              onelegArray.push(marker);
+              marker.addListener("click", () => {
+                setSelectedMarker(index);
+              });
+            });
+
+            arr.push(onelegArray);
+            setMarkersArray(arr);
+            return console.log("++++DEFAULT----");
+        }
+        console.log("if");
+      } else if (
+        rerenderStateForDifferentPath === null &&
+        rerenderStateForDifferentNeed === "NONE"
+      ) {
+        console.log("else if");
+        const arr = [];
+        var index = 0;
+        // var arrayIndex = 0;
+        console.log("directionsRenderer", directionsRenderer);
+        for (
+          let i = 0;
+          i < directionsRenderer.getDirections().routes[0].legs.length;
+          i++
+        ) {
+          const onelegArray = [];
+          const waypoints =
+            directionsRenderer.getDirections().routes[0].legs[i].steps;
+          waypoints.forEach((waypoint) => {
+            const marker = new window.google.maps.Marker(
+              {
+                position: waypoint.end_location,
+                clickable: true,
+                draggable: false,
+                // key: { index },
+                map: directionsRenderer.getMap(),
+                title: `Step ${index + 1}`,
+                label: {
+                  text: `${index + 1}`,
+                  color: "white",
+                },
+              },
+              onMarkerClick
+            );
+            index = index + 1;
+            onelegArray.push(marker);
+            // console.log("arr[i].push(marker): ", arrayIndex);
+            marker.addListener("click", () => {
+              // console.log("aaaaaa", index, marker);
+              setSelectedMarker(index);
+            });
+          });
+
+          arr.push(onelegArray);
+        }
+        setMarkersArray(arr);
+        console.log("Arr: ", arr);
+        // setCurretMarkersOnTheMap(waypoints);
+      }
+    }
+  };
+
+  const reloadDirectionsBetweenChoosenPoints = () => {};
+
+  const reloadDirectionsRenderer = () => {
+    // increment the key to force a re-render of the DirectionsRenderer component
+    setDirectionsRendererKey((prevKey) => prevKey + 1);
+  };
   async function calculateRoute() {
-    testPrint();
+    const fixedWaypoints2 = testPrint();
+    setRerenderStateForDifferentPath(null);
+    setRerenderStateForDifferentNeed("NONE");
+    // if (directionsRendererRef.current !== null) {
+    //   directionsRendererRef.current.setMap(null);
+    // }
     // console.log("originRef.current.value:", originRef.current.value);
     if (originRef.current.value === "" || destiantionRef.current.value === "") {
       return;
     }
+    // const center = { lat: 54.8985, lng: 23.9036 };
+
     // eslint-disable-next-line no-undef
     const directionsService = new google.maps.DirectionsService();
     const results = await directionsService.route({
       origin: originRef.current.value,
-      waypoints: fixedWaypoints,
+      waypoints: fixedWaypoints2,
       destination: destiantionRef.current.value,
       // eslint-disable-next-line no-undef
-      travelMode: google.maps.TravelMode.DRIVING,
+      travelMode: travelStyle,
     });
-    //results.routes[0].legs[0] - legs[0] legs[1] legs[2] ..
-    setDirectionsResponse(results);
-    // console.log(results.routes[0].legs);
+    // console.log("fixedWaypoints", fixedWaypoints);
+
+    setDirectionsResponse(results); // UPDATE TIK IS 2 KARTO! REIK TVARKYT
+    // console.log("directionsResponse", directionsResponse);
+
+    const dataOriginLatLng = {
+      lat: results.routes[0].legs[0].start_location.lat(),
+      lng: results.routes[0].legs[0].start_location.lng(),
+    };
+
+    // console.log("dataOriginLatLng", dataOriginLatLng);
+    // console.log("results.routes[0]", results.routes[0]);
+    setOriginLatLng(dataOriginLatLng);
+
     const distancesBetween = [];
     results.routes[0].legs.map((item) => {
       distancesBetween.push({
@@ -215,42 +568,30 @@ export default function TestMap() {
     });
 
     setDistancesBetweenPoints(distancesBetween);
-    // console.log(distancesBetweenPoints);
-    // if (item.current === null) {
-    //   return;
-    // } else {
-    //   distancesBetweenPoints.push({
-    //     start_address: item.routes.legs,
-    //     end_address: item.routes.legs,
-    //     distance: item.routes.legs.distance.text,
-    //     duration: true,
-    //   });
-    //   console.log(item.current.value);
-    //   return item;
-    // }
-
-    // setfixedWaypoints(waypts);
-    setDistance(results.routes[0].legs[0].distance.text);
-    setDuration(results.routes[0].legs[0].duration.text);
+    // console.log(distancesBetween);
+    reloadDirectionsRenderer();
+    // setDistance(results.routes[0].legs[0].distance.text);
+    // setDuration(results.routes[0].legs[0].duration.text);
   }
 
   // console.log(distancesBetweenPoints);
   function clearRoute() {
     setDirectionsResponse(null);
-    setDistance("");
-    setDuration("");
+    // setDistance("");
+    // setDuration("");
     setDistancesBetweenPoints([]);
+    setExtraInputs([]);
+    setData(initialState);
+    setOriginLatLng(centerPoint);
+    // console.log("data", data);
     originRef.current.value = "";
     destiantionRef.current.value = "";
+    // directionsRendererRef.current.value = "";
   }
 
   return (
     <>
-      <div
-        className="input-container"
-        // spacing={2}
-        // justifyContent="space-between"
-      >
+      <div className="input-container">
         <div className="container-small">
           <div className="container-small left">{ShowInputsState(data)}</div>
           <div className="container-small right">
@@ -267,6 +608,7 @@ export default function TestMap() {
             </div>
 
             {/* ++++ */}
+            {/* {console.log(extraInputs)} */}
             {extraInputs.map((item, i) => {
               return (
                 <div className="box">
@@ -284,14 +626,18 @@ export default function TestMap() {
                 </div>
               );
             })}
-            <div className="box">
-              <FaPlusCircle
-                className="plusButton"
-                color="#177a23"
-                alt="logo"
-                onClick={AddNewInputField}
-              ></FaPlusCircle>
-            </div>
+            {extraInputs.length <= 7 ? (
+              <div className="box">
+                <FaPlusCircle
+                  className="plusButton"
+                  color="#177a23"
+                  alt="logo"
+                  onClick={AddNewInputField}
+                ></FaPlusCircle>
+              </div>
+            ) : (
+              <></>
+            )}
             <div className="box">
               <Autocomplete>
                 <input
@@ -316,81 +662,133 @@ export default function TestMap() {
               >
                 Calculate Route
               </Button>
+
               <IconButton
                 aria-label="center back"
                 icon={<FaTimes />}
                 onClick={clearRoute}
+                // TODO:
+                //clear mid-waypoints
+              />
+              <IconButton
+                aria-label="center back"
+                icon={<FaWalking />}
+                onClick={handleTravelTypeChange("WALKING")}
+                // TODO:
+                //walking style
+              />
+              <IconButton
+                aria-label="center back"
+                icon={<FaCarSide />}
+                onClick={handleTravelTypeChange("DRIVING")}
+                // TODO:
+                //driving style
               />
             </ButtonGroup>
           </div>
-          {/* </div> */}
         </div>
-        {/* <div class="dropdown">
-  <button class="dropbtn">Dropdown</button>
-  <div class="dropdown-content">
-    <a href="#">Link 1</a>
-    <a href="#">Link 2</a>
-    <a href="#">Link 3</a>
-  </div>
-</div> */}
-
-        {/* <div onClick={handleClick}>
-          <p>Click me to {isOpen ? "hide" : "show"} the content!</p>
-          {isOpen && <div>Content goes here.</div>}
-        </div> */}
-
         <p></p>
         <ul
-          class="dropdown-content"
+          className="dropdown-content"
           style={{ color: "white", padding: "0px 0px 0px 0px" }}
         >
           {distancesBetweenPoints.map((item, i) => {
             // console.log(item);
-            console.log(isOpen);
+            // console.log(isOpen);
             return (
-              <div key={i} onClick={() => handleClick(i)}>
-                <p style={{ backgroundColor: "black" }}>
-                  Click me to {isOpen[i] ? "hide" : "show"} the content!
+              <div
+                className="pointInfoOpened"
+                key={i}
+                onClick={() => handleClick(i)}
+              >
+                <p style={{ margin: "0px 0px 0px 0px", height: "30px" }}>
+                  {/* Click me to {isOpen[i] ? "hide" : "show"} the content! */}
+                  {item.start_address.substring(
+                    0,
+                    item.start_address.indexOf(",")
+                  )}{" "}
+                  -{" "}
+                  {item.end_address.substring(0, item.end_address.indexOf(","))}
                 </p>
                 {isOpen[i] && (
-                  <div>
-                    <p>
-                      Distance between : {item.start_address} and{" "}
-                      {item.end_address}
-                    </p>
+                  <div key={i}>
+                    <p>1 - {item.start_address}</p>
+                    <p>2 - {item.end_address}</p>
                     <p>Distance: {item.distance}</p>
                     <p>Duration : {item.duration}</p>
+                    <div className="route-part-icons">
+                      <IconButton
+                        className="route-part-icons icont-button"
+                        aria-label="center back"
+                        icon={<RiRestaurantLine size={30} />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // handleTravelTypeChange("WALKING");
+                          setRerenderStateForDifferentPath(i); //which path
+                          setRerenderStateForDifferentNeed("RESTAURANT"); //which type of services
+                          reloadDirectionsRenderer();
+                        }}
+                        // TODO:
+                        // Show all restaurant around
+                      />
+                      <IconButton
+                        className="route-part-icons icont-button"
+                        aria-label="center back"
+                        icon={<GiBinoculars size={30} />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // handleTravelTypeChange("WALKING");
+                          setRerenderStateForDifferentPath(i); //which path
+                          setRerenderStateForDifferentNeed("SIGNSEEING"); //which type of services
+                          reloadDirectionsRenderer();
+                        }}
+                        // TODO:
+                        // Show all signseeing places
+                      />
+                      <IconButton
+                        className="route-part-icons icont-button"
+                        aria-label="center back"
+                        icon={<RiGasStationLine size={30} />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // handleTravelTypeChange("WALKING");
+                          setRerenderStateForDifferentPath(i); //which path
+                          setRerenderStateForDifferentNeed("GASSTATION"); //which type of services
+                          reloadDirectionsRenderer();
+                        }}
+                        // TODO:
+                        // Show all gas stations
+                      />
+                    </div>
+                    {/* <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        reloadDirectionsRenderer();
+                      }}
+                    >
+                      Reload DirectionsRenderer
+                    </button> */}
                   </div>
                 )}
               </div>
             );
-            // return (
-            //   <li className="result-box" style={{ padding: "0px 0px 0px 0px" }}>
-            //     <p>
-            //       Distance between : {item.start_address} and {item.end_address}{" "}
-            //     </p>
-            //     <p>Distance: {item.distance}</p>
-            //     <p>Duration : {item.duration}</p>
-            //   </li>
-            // );
           })}
         </ul>
         <div className="box">
-          {/* <p>Travel Duration : {duration} </p> */}
           <IconButton
             aria-label="center back"
             icon={<FaLocationArrow />}
             isRound
             onClick={() => {
-              map.panTo(center);
-              map.setZoom(15);
+              map.panTo(originLatLng);
+              map.setZoom(9);
             }}
           />
         </div>
       </div>
 
       <GoogleMap
-        center={center}
+        center={originLatLng}
         zoom={7}
         mapContainerClassName="only-map-container"
         options={{
@@ -399,142 +797,39 @@ export default function TestMap() {
           mapTypeControl: false,
           fullscreenControl: false,
         }}
-        onLoad={(map) => setMap(map)}
+        onLoad={onMapLoad}
       >
-        <Marker position={center} />
+        <Marker
+          position={originLatLng}
+          onLoad={onMarkerLoad}
+          onClick={onMarkerClick}
+        />
+        {infoWindow !== null && (
+          <InfoWindow
+            position={originLatLng}
+            onCloseClick={onInfoWindowClose}
+            onLoad={() => infoWindow.open(map, marker)}
+          >
+            <div onClick={onInfoWindowClick}>
+              Click here to find Restaurants
+            </div>
+          </InfoWindow>
+        )}{" "}
+        {infoWindow === null && <p>cdscd</p>}
+        {places.map((place) => (
+          <Marker key={place.place_id} position={place.geometry.location} />
+        ))}
         {directionsResponse && (
-          <DirectionsRenderer directions={directionsResponse} />
+          <DirectionsRenderer
+            key={directionsRendererKey}
+            directions={directionsResponse}
+            options={{ suppressMarkers: false, draggable: true }}
+            onLoad={directionsRendererCallback}
+          />
         )}
       </GoogleMap>
+
+      <div id="warnings-panel"></div>
     </>
   );
-}
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-// .
-{
-  /* <Flex
-          position="relative"
-          flexDirection="column"
-          alignItems="center"
-          h="100vh"
-          w="50vw"
-          right={0}
-        >
-          // position="absolute" left={0} top={0} h="100%" w="100%" 
-          <Box
-            // className="only-map-container"
-            position="absolute"
-            left={0}
-            top={0}
-            h="50%"
-            w="50%"
-          >
-            <GoogleMap
-              center={center}
-              zoom={7}
-              mapContainerClassName="only-map-container"
-              options={{
-                zoomControl: false,
-                streetViewControl: false,
-                mapTypeControl: false,
-                fullscreenControl: false,
-              }}
-              onLoad={(map) => setMap(map)}
-            >
-              <Marker position={center} />
-              {directionsResponse && (
-                <DirectionsRenderer directions={directionsResponse} />
-              )}
-            </GoogleMap>
-          </Box>
-          <Box
-            p={4}
-            borderRadius="lg"
-            m={4}
-            bgColor="white"
-            shadow="base"
-            minh="100px"
-            minW="200px" //minW="container.md"
-            zIndex="1"
-          >
-            <HStack spacing={2} justifyContent="space-between">
-              <Box flexGrow={1}>
-                <Autocomplete>
-                  <input type="text" placeholder="Origin" ref={originRef} />
-                </Autocomplete>
-              </Box>
-              <Box flexGrow={1}>
-                <Autocomplete>
-                  <input
-                    type="text"
-                    placeholder="Destination"
-                    ref={destiantionRef}
-                  />
-                </Autocomplete>
-              </Box> */
-}
-
-{
-  /* <ButtonGroup>
-                <Button
-                  colorScheme="pink"
-                  type="submit"
-                  onClick={calculateRoute}
-                >
-                  Calculate Route
-                </Button>
-                <IconButton
-                  aria-label="center back"
-                  icon={<FaTimes />}
-                  onClick={clearRoute}
-                />
-              </ButtonGroup> */
-}
-{
-  /* </HStack>
-            <HStack spacing={4} mt={4} justifyContent="space-between">
-              <Text>Distance: {distance} </Text>
-              <Text>Duration: {duration} </Text>
-              <IconButton
-                aria-label="center back"
-                icon={<FaLocationArrow />}
-                isRound
-                onClick={() => {
-                  map.panTo(center);
-                  map.setZoom(15);
-                }}
-              />*/
-}
-{
-  /* </HStack>
-          </Box>
-        </Flex> */
-}
-{
-  /* </div> */
 }

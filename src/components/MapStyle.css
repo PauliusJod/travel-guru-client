@@ -21,7 +21,7 @@
   display: block;
   text-align: center;
   width: 60px;
-  height: 60px;
+  /* height: 60px; */
 }
 /* --------Dropdown test---------- */
 
@@ -50,6 +50,24 @@
   height: 50px;
 }
 */
+.route-part-icons {
+  display: flex;
+  justify-content: space-evenly;
+}
+.route-part-icons:hover {
+  display: flex;
+  justify-content: space-evenly;
+  /* background-color: rgb(33, 33, 83); */
+}
+.route-part-icons.icont-button {
+  margin-bottom: 5px;
+  border-radius: 5px;
+  border: 1px solid black;
+}
+.route-part-icons.icont-button:hover {
+  background-color: rgb(53, 91, 161);
+}
+
 .container-small.left.icons {
   display: flex;
   justify-content: right;
@@ -59,7 +77,7 @@
   /* padding: 10px 0; */
   /* margin: 10px 10px 5px 0px; */
   width: 60px;
-  height: 60px;
+  height: 40px;
 }
 .container-small.left.icons :hover {
   font-size: 2.5ch;
@@ -79,8 +97,8 @@
   justify-content: left;
   /* padding: 15px 0; */
   /* margin: 10px 10px 10px 0px; */
-  width: 100%;
-  height: 60px;
+  min-width: 100%;
+  height: 40px;
   position: relative;
   opacity: 1;
 }
@@ -96,6 +114,16 @@
   height: 180px;
   position: relative;
   opacity: 1;
+}
+
+.pointInfoOpened {
+  border: 1px dashed rgb(6, 6, 32);
+  background-color: rgba(36, 69, 129, 0.8);
+  border-radius: 5px;
+}
+.pointInfoOpened:hover {
+  /* border: 1px dashed rgb(6, 6, 32); */
+  background-color: rgba(24, 41, 73, 0.5);
 }
 .input-container {
   margin: 1rem auto;
