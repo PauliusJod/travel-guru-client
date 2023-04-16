@@ -1,12 +1,5 @@
 import React, { Component } from "react";
-import {
-  Collapse,
-  Navbar,
-  NavbarBrand,
-  NavbarToggler,
-  NavItem,
-  NavLink,
-} from "reactstrap";
+import { Collapse, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
 import { Link } from "react-router-dom";
 import "./NavMenu.css";
 
@@ -95,12 +88,22 @@ export class NavMenu extends Component {
                 </NavLink>
               </NavItem>
               <NavItem>
-                <NavLink
-                  tag={Link}
-                  className="text-dark"
-                  to="/"
-                  onClick={this.handleLogout}
-                >
+                <NavLink tag={Link} className="text-dark" to="/mapsGallery">
+                  Maps Gallery
+                </NavLink>
+              </NavItem>
+              <NavItem>
+                <NavLink tag={Link} className="text-dark" to="/mapExplorer">
+                  Map Explorer
+                </NavLink>
+              </NavItem>
+              <NavItem>
+                <NavLink tag={Link} className="text-dark" to="/testMap">
+                  testMap
+                </NavLink>
+              </NavItem>
+              <NavItem>
+                <NavLink tag={Link} className="text-dark" to="/" onClick={this.handleLogout}>
                   Logout
                 </NavLink>
               </NavItem>

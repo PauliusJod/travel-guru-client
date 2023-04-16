@@ -3,11 +3,21 @@ import MapExplorer from "./components/MapExplorer";
 import TestMap from "./components/TestMap";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import MapsGallery from "./components/MapsGallery";
+import PreviewTripMap from "./components/PreviewTripMap";
 
 const AppRoutes = [
   {
     index: true,
     element: <Home />,
+  },
+  {
+    path: "/mapsGallery",
+    element: <MapsGallery />,
+  },
+  {
+    path: "/previewTripMap",
+    element: <PreviewTripMap />,
   },
   {
     path: "/mapExplorer",

@@ -91,11 +91,7 @@ export default class Register extends Component {
     this.form.validateAll();
 
     if (this.checkBtn.context._errors.length === 0) {
-      AuthService.register(
-        this.state.username,
-        this.state.email,
-        this.state.password
-      ).then(
+      AuthService.register(this.state.username, this.state.email, this.state.password).then(
         (response) => {
           this.setState({
             message: response.data.message,
@@ -105,9 +101,7 @@ export default class Register extends Component {
         (error) => {
           console.log("nepraeinu");
           const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
+            (error.response && error.response.data && error.response.data.message) ||
             error.message ||
             error.toString();
 
@@ -183,11 +177,7 @@ export default class Register extends Component {
             {this.state.message && (
               <div className="form-group">
                 <div
-                  className={
-                    this.state.successful
-                      ? "alert alert-success"
-                      : "alert alert-danger"
-                  }
+                  className={this.state.successful ? "alert alert-success" : "alert alert-danger"}
                   role="alert"
                 >
                   {this.state.message}

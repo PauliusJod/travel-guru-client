@@ -140,6 +140,11 @@
 p {
   text-align: center;
 }
+.pointInfoOpenedInput {
+  display: flex;
+  width: 100%;
+  height: 100px;
+}
 .chooseInput {
   display: flex;
   position: relative;
