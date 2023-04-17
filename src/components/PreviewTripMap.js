@@ -47,7 +47,8 @@ export default function PreviewTripMap(textas) {
   async function testas() {
     try {
       if (isLoaded) {
-        const data = exportedData;
+        console.log("onload: ", location.state.message);
+        const data = location.state.message;
         console.log("data", data);
         if (data.origin === "" || data.destination === "") {
           return;
@@ -56,9 +57,9 @@ export default function PreviewTripMap(textas) {
         const directionsService = new google.maps.DirectionsService();
         console.log("directionsService", directionsService);
         const results = await directionsService.route({
-          origin: data.origin[0],
-          waypoints: data.midWaypoints,
-          destination: data.destiantion[0],
+          origin: data.rOrigin,
+          waypoints: [],
+          destination: data.rDestination,
           provideRouteAlternatives: true,
           // eslint-disable-next-line no-undef
           travelMode: "DRIVING",
@@ -73,6 +74,7 @@ export default function PreviewTripMap(textas) {
     }
   }
   // window.onload = async function () {
+  //   console.log("onload: ", location.state.message.routeId);
   //   const data = exportedData;
   //   if (data.origin === "" || data.destination === "") {
   //     return;
@@ -114,9 +116,10 @@ export default function PreviewTripMap(textas) {
         {!isPageLoaded && (
           <div>
             <p>Error</p>
-            <p>{location.state.message}</p>
+            <p>{location.state.message.routeId}</p>
           </div>
         )}
+        {console.log(location.state.message)}
 
         {/* {isPageLoaded && ( */}
         <GoogleMap

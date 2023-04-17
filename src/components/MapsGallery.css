@@ -18,6 +18,19 @@
   display: grid;
   width: 100%;
   grid-template-areas:
+    "main main main "
+    "main main main "
+    "main main main ";
+  gap: 10px;
+  background-color: rgba(75, 165, 187, 0.2);
+  border-radius: 5px;
+  padding: 10px;
+}
+
+/* .grid-container {
+  display: grid;
+  width: 100%;
+  grid-template-areas:
     "header header header header header header"
     "menu main main main right right"
     "menu footer footer footer footer footer";
@@ -25,7 +38,7 @@
   background-color: rgba(75, 165, 187, 0.2);
   border-radius: 5px;
   padding: 10px;
-}
+} */
 .grid-container > div {
   display: flex;
   background-color: rgba(255, 255, 255, 0.8);

@@ -27,6 +27,7 @@ import { RiRestaurantLine, RiGasStationLine } from "react-icons/ri";
 import { GiBinoculars } from "react-icons/gi";
 import { FiDownload } from "react-icons/fi";
 import { func } from "prop-types";
+import axios from "axios";
 
 const CircularJSON = require("circular-json");
 //TODO:
@@ -207,6 +208,18 @@ export default function TestMap() {
   // .
 
   function testPrint() {
+    const wayptsForDB = [];
+    waypoints.map((item) => {
+      if (item.current === null) {
+        return item;
+      } else {
+        wayptsForDB.push({
+          midWaypointLocation: item.current.value,
+          midWaypointStopover: true,
+        });
+        return item;
+      }
+    });
     const waypts = [];
     waypoints.map((item) => {
       if (item.current === null) {
@@ -219,7 +232,7 @@ export default function TestMap() {
         return item;
       }
     });
-    setfixedWaypoints(waypts);
+    setfixedWaypoints(wayptsForDB);
     return waypts;
     // console.log("waypts", waypts);
   }
@@ -519,13 +532,58 @@ destiantionRef.current.value
     // console.log(map.length);
     // console.log(map);
   }
+  const convertDescriptionsForDb = (savedPointsValues) => {
+    const descForDB = [];
+    savedPointsValues.map((item, i) => {
+      if (item === null || item === "") {
+        return item;
+      } else {
+        descForDB.push({
+          routeDescStopId: i,
+          routeDescription: item,
+        });
+        return item;
+      }
+    });
+    return descForDB;
+  };
   function saveRoute() {
+    // event.preventDefault();
+    const user = JSON.parse(localStorage.getItem("user"));
+    const headers = {
+      Authorization: `Bearer ${user.accessToken}`,
+    };
+    const descriptionsForDB = convertDescriptionsForDb(savePointInputValues);
+    console.log("descriptionsForDB", descriptionsForDB);
     savePointInputValues.map((item, i) => {
       console.log("asasasa", item, "---", i);
       setDisabledPointInputs[i] == "disabled";
       // disabled
     });
-    // setDisabledPointInputs;
+    console.log("savePointInputValues", savePointInputValues);
+    const exportData = {
+      origin: originRef.current.value,
+      midWaypoints: fixedWaypoints,
+      destiantion: destiantionRef.current.value,
+    };
+    console.log(exportData.origin);
+    console.log(exportData.midWaypoints);
+    console.log(exportData.destiantion);
+    axios
+      .post(
+        "http://localhost:5113/api/troutes",
+        {
+          rOrigin: exportData.origin,
+          rDestination: exportData.destiantion,
+          midWaypoints: exportData.midWaypoints,
+          descriptions: descriptionsForDB,
+        },
+        { headers }
+      )
+      .then((response) => console.log(response))
+      .catch((err) => console.log(err));
+
+    // setDisabledPointInputs;cd
     console.log("Save route");
   }
 
