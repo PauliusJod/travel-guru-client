@@ -15,10 +15,10 @@ export default function MapsGallery() {
 
   useEffect(() => {
     async function GetRoutesFromDatabase() {
-      axios.get("http://localhost:5113/api/troutes/").then((resp) => {
+      axios.get("http://localhost:5113/api/troutesprivate/").then((resp) => {
         //store data loaded
         setAllRoutes(resp.data);
-        console.log(resp.data);
+        console.log("resp.data", resp.data);
       });
     }
     GetRoutesFromDatabase();
@@ -28,39 +28,27 @@ export default function MapsGallery() {
     navigate("/previewTripMap", { state: { message: item } });
   }
   return (
-    <>
-      <div className="grid-container">
-        {allRoutes.map((oneRoute) => (
-          <div>
-            <div className="item3" id={oneRoute.id} alt={oneRoute.routeId}>
-              <img
-                src={myImage2}
-                alt={oneRoute.routeId}
-                width="200"
-                height="200"
-                onClick={() => handleClick(oneRoute)}
-              ></img>
-            </div>
+    <div className="grid-container">
+      {allRoutes.map((oneRoute) => (
+        <div key={oneRoute.routeId}>
+          <div
+            className="item3"
+            key={oneRoute.routeId}
+            id={oneRoute.routeId}
+            alt={oneRoute.routeId}
+          >
+            <img
+              key={oneRoute.routeId}
+              src={myImage2}
+              alt={oneRoute.routeId}
+              width="200"
+              height="200"
+              onClick={() => handleClick(oneRoute)}
+            ></img>
           </div>
-        ))}
-        {/* <div className="item2">
-              <img src={myImage} alt="Girl in a jacket" width="200" height="200"></img>
-            </div>
-
-            <div className="item3">
-              <img src={myImage} alt="Girl in a jacket" width="200" height="200"></img>
-            </div>
-
-            <div className="item4">
-              <img src={myImage2} alt="Girl in a jacket" width="200" height="200"></img>
-            </div>
-
-            <div className="item5">
-              <img src={myImage} alt="Girl in a jacket" width="200" height="200"></img>
-            </div> */}
-      </div>
-      {/* </div> */}
-    </>
+        </div>
+      ))}
+    </div>
   );
 }
 

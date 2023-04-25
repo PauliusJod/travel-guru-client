@@ -71,9 +71,7 @@ class Login extends Component {
         },
         (error) => {
           const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
+            (error.response && error.response.data && error.response.data.message) ||
             error.message ||
             error.toString();
 
@@ -119,7 +117,7 @@ class Login extends Component {
                   <div className="form-group">
                     <label htmlFor="password">Password</label>
                     <Input
-                      type="password"
+                      type="text" // password
                       className="form-control"
                       name="password"
                       value={this.state.password}
@@ -129,10 +127,7 @@ class Login extends Component {
                   </div>
 
                   <div className="form-group">
-                    <button
-                      className="btn btn-success btn-block"
-                      disabled={this.state.loading}
-                    >
+                    <button className="btn btn-success btn-block" disabled={this.state.loading}>
                       {this.state.loading && (
                         <span className="spinner-border spinner-border-sm"></span>
                       )}

@@ -93,13 +93,13 @@ export class NavMenu extends Component {
                 </NavLink>
               </NavItem>
               <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/mapExplorer">
-                  Map Explorer
+                <NavLink tag={Link} className="text-dark" to="/testMap">
+                  testMap
                 </NavLink>
               </NavItem>
               <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/testMap">
-                  testMap
+                <NavLink tag={Link} className="text-dark" to="/profile">
+                  Profile
                 </NavLink>
               </NavItem>
               <NavItem>
@@ -113,11 +113,6 @@ export class NavMenu extends Component {
               <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/">
                   Home
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/mapExplorer">
-                  Map Explorer
                 </NavLink>
               </NavItem>
               <NavItem>
@@ -147,7 +142,13 @@ export class NavMenu extends Component {
     // handle logout logic here
   };
 }
-
+{
+  /* <NavItem>
+                <NavLink tag={Link} className="text-dark" to="/mapExplorer">
+                  Map Explorer
+                </NavLink>
+              </NavItem> */
+}
 //export class NavMenu extends Component {
 //  static displayName = NavMenu.name;
 

@@ -5,6 +5,8 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import MapsGallery from "./components/MapsGallery";
 import PreviewTripMap from "./components/PreviewTripMap";
+import Profile from "./components/Profile";
+import PrivateRoutePreview from "./components/PrivateRoutePreview";
 
 const AppRoutes = [
   {
@@ -12,8 +14,16 @@ const AppRoutes = [
     element: <Home />,
   },
   {
+    path: "/profile",
+    element: <Profile />,
+  },
+  {
     path: "/mapsGallery",
     element: <MapsGallery />,
+  },
+  {
+    path: "/privateRoutePreview",
+    element: <PrivateRoutePreview />,
   },
   {
     path: "/previewTripMap",
