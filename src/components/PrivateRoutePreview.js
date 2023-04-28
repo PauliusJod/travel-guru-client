@@ -14,11 +14,14 @@ import {
 
 import { Button, ButtonGroup, IconButton, SkeletonText, Textarea } from "@chakra-ui/react";
 
+import { RiDeleteBackFill } from "react-icons/ri";
+import { CiSaveDown1 } from "react-icons/ci";
 import { MdDataSaverOn } from "react-icons/md";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
+import jwt_decode from "jwt-decode";
 import "./PrivateRoutePreview.css";
 export default function PrivateRoutePreview(textas) {
   const centerPoint = { lat: 54.8985, lng: 23.9036 };
@@ -37,25 +40,36 @@ export default function PrivateRoutePreview(textas) {
   const [isPageContentLoaded, setIsPageContentLoaded] = useState(false);
   const [directionsRendererKey, setDirectionsRendererKey] = useState(1);
 
+  //SET on AXIOS GET
   const [allRouteMidWaypoints, setAllRouteMidWaypoints] = useState(null);
-  const [allRouteSectionsDescriptions, setAllRouteSectionsDescriptions] = useState(null);
+  // const [allRouteSectionsDescriptions, setAllRouteSectionsDescriptions] = useState(null);
   const [allRoutePointsDescriptions, setAllRoutePointsDescriptions] = useState([]);
+  const [additionalPointsFromDB, setAdditionalPointsFromDB] = useState([]);
   const [allImagesUrlsForRoute, setAllImagesUrlsForRoute] = useState([]);
+  const [allRecommendationsUrlsForRoute, setAllRecommendationsUrlsForRoute] = useState([]);
+  //SET on AXIOS GET -----------------------------------------------------------------------
+  //SET local handlers+++++++++++++++++++++++++++++++
+  const [newRecommendationTextURL, setNewRecommendationTextURL] = useState("");
+  //SET local handlers+++++++++++++++++++++++++++++++
+
   const [pointDescriptionValue, setPointDescriptionValue] = useState(null);
+
   const [allMapPlaces, setAllMapPlaces] = useState([]);
-
-  //---click on map
-
+  //---click on map setPointIdIsEditing
   const [markerPosition, setMarkerPosition] = useState(null);
+  const [additionalMarkerDescription, setAdditionalMarkerDescription] = useState("");
+  const [toggleAdditionalButton, setToggleAdditionalButton] = useState(false);
+  const [pointIdIsEditing, setPointIdIsEditing] = useState(null);
   const [additionalMarkersOnEdit, setAdditionalMarkersOnEdit] = useState([]); // visi sitie i setAllAdditionalMarkersOnEdit
   const [allAdditionalMarkersOnEdit, setAllAdditionalMarkersOnEdit] = useState(
     Array.from({ length: 10 })
   ); // array is setAdditionalMarkersOnEdit
-  const [allAdditionalMarkersPosition, setAllAdditionalMarkersPosition] = useState([]); // DB
+  const [allAdditionalMarkersForDB, setAllAdditionalMarkersForDB] = useState([]); // DB
   //
   //
   //
-  const [choosenRouteMarkForAdditionalTable, setChoosenRouteMarkForAdditionalTable] = useState([]);
+  const [choosenRouteMarkForAdditionalTable, setChoosenRouteMarkForAdditionalTable] =
+    useState(null);
   //----
   const settings = {
     // className: "preview-images-container", // gadina uzkrovima
@@ -75,10 +89,10 @@ export default function PrivateRoutePreview(textas) {
   };
   const [error, setError] = useState(null);
   useEffect(() => {
-    console.log("useEffect");
-    console.log("location.state.message", location.state.message);
+    console.log("allAdditionalMarkersOnEdit", allAdditionalMarkersOnEdit);
+    // console.log("location.state.message", location.state.message);
     async function GetMidWaypointsFromDatabase() {
-      console.log("aaa");
+      // console.log("aaa");
       axios
         .get(
           "http://localhost:5113/api/troutesprivate/" +
@@ -102,10 +116,23 @@ export default function PrivateRoutePreview(textas) {
           setIsPageContentLoaded(true);
           GetPointsDescFromDatabase();
           GetImagesUrlsFromDatabase();
+          GetAdditionalPointsFromDatabase();
+          GetRecommendationsUrlsFromDatabase();
         });
     }
     GetMidWaypointsFromDatabase();
   }, []);
+  useEffect(() => {
+    if (allAdditionalMarkersForDB) {
+      console.log("5555555555555555555", allAdditionalMarkersForDB);
+      updateRouteToDB(allAdditionalMarkersForDB);
+    }
+  }, [allAdditionalMarkersForDB]);
+  useEffect(() => {
+    if (additionalPointsFromDB && allRoutePointsDescriptions) {
+      testasaa();
+    }
+  }, [additionalPointsFromDB, allRoutePointsDescriptions]);
 
   // .post(
   //   "http://localhost:5113/api/troutesprivate",
@@ -125,7 +152,7 @@ export default function PrivateRoutePreview(textas) {
   // )
 
   async function GetPointsDescFromDatabase() {
-    console.log("GetPointsDescFromDatabase");
+    // console.log("GetPointsDescFromDatabase");
     axios
       .get(
         "http://localhost:5113/api/troutesprivate/" +
@@ -133,12 +160,14 @@ export default function PrivateRoutePreview(textas) {
           "/routepoints"
       )
       .then((resp) => {
+        // console.log("resp.data", resp.data);
         const pointsDescFromDB = [];
         resp.data.map((item) => {
           if (item.current === null) {
             return item;
           } else {
             pointsDescFromDB.push({
+              pointId: item.pointId,
               pointOnRouteId: item.pointOnRouteId,
               routePointDescription: item.routePointDescription,
             });
@@ -151,36 +180,167 @@ export default function PrivateRoutePreview(textas) {
       });
   }
   async function GetImagesUrlsFromDatabase() {
-    console.log("GetImagesUrlsFromDatabase");
+    // console.log("GetImagesUrlsFromDatabase");
     axios
       .get(
         "http://localhost:5113/api/troutesprivate/" + location.state.message.routeId + "/imageurl"
       )
       .then((resp) => {
-        console.log("-----------------------------------------", resp.data);
+        // console.log("-----------------------------------------", resp.data);
         const imagesUrlsFromDB = [];
         resp.data.map((item) => {
           if (item.current === null) {
             return item;
           } else {
             imagesUrlsFromDB.push({
-              image_url: item.rImagesUrlLink,
+              rImagesUrlLink: item.rImagesUrlLink,
             });
             return item;
           }
         });
-        console.log("GetImagesUrlsFromDatabase: ", imagesUrlsFromDB);
+        // console.log("GetImagesUrlsFromDatabase: ", imagesUrlsFromDB);
         setAllImagesUrlsForRoute(imagesUrlsFromDB);
         // setIsPageContentLoaded(true);
       });
   }
+  async function GetRecommendationsUrlsFromDatabase() {
+    axios
+      .get(
+        "http://localhost:5113/api/troutesprivate/" +
+          location.state.message.routeId +
+          "/recommendationurl"
+      )
+      .then((resp) => {
+        console.log("recommendations: ", resp.data);
+        const recommendationsUrlsFromDB = [];
+        resp.data.map((item) => {
+          if (item.current === null) {
+            return item;
+          } else {
+            recommendationsUrlsFromDB.push({
+              rRecommendationUrlId: item.rRecommendationUrlId,
+              rRecommendationUrlLink: item.rRecommendationUrlLink,
+              tRoutePrivaterouteId: item.tRoutePrivaterouteId,
+            });
+            return item;
+          }
+        });
+        setAllRecommendationsUrlsForRoute(recommendationsUrlsFromDB);
+        // setIsPageContentLoaded(true);
+      });
+  }
+  async function GetAdditionalPointsFromDatabase() {
+    axios
+      .get(
+        "http://localhost:5113/api/troutesprivate/" +
+          location.state.message.routeId +
+          "/additionalpoints"
+      )
+      .then((resp) => {
+        const additionalPointsFromDBTemp = [];
+        console.log(resp.data);
+        resp.data.map((item) => {
+          if (item.current === null) {
+            return item;
+          } else {
+            //pointId: pointIdIsEditing, desc: "", lat: markerPosition.lat, lng: markerPosition.lng
+            additionalPointsFromDBTemp.push({
+              pointId: item.troutePointDescriptionpointId,
+              desc: item.additionalPointInformation,
+              lat: item.additionalPointCoordX,
+              lng: item.additionalPointCoordY,
+            });
+            return item;
+          }
+        });
+        setAdditionalPointsFromDB(additionalPointsFromDBTemp);
+        console.log("+++++++++++++++", additionalPointsFromDBTemp);
+      })
+      .catch((err) => console.log("err", err));
+  }
+  const testasaa = () => {
+    // pointsDescFromDB pointOnRouteId =choosen.. pointId == pointId(additional)        setAllRoutePointsDescriptions
+    // additionalPointsFromDB     additionalPointsFromDB
+    //saveAdditionalMarkers();
+    console.log("00000000000000", allRoutePointsDescriptions);
+    console.log("88888888888888888", additionalPointsFromDB);
+
+    for (let i = 0; i < allRoutePointsDescriptions.length; i++) {
+      const oneRoutePointAllMarkers = [];
+      for (let j = 0; j < additionalPointsFromDB.length; j++) {
+        const element2 = additionalPointsFromDB[j];
+
+        if (allRoutePointsDescriptions[i].pointId == element2.pointId) {
+          oneRoutePointAllMarkers.push({
+            pointId: element2.pointId,
+            desc: element2.desc,
+            lat: element2.lat,
+            lng: element2.lng,
+          });
+          // break;
+        } else {
+          // break;
+        }
+        // setAdditionalMarkersOnEdit((prevPositions) => [
+        //   ...prevPositions,
+        //   { pointId: element2.pointId, desc: element2.desc, lat: element2.lat, lng: element2.lng }, // desc: "aa", STRUCTURE
+        // ]);
+      }
+      console.log("++++++++++++++++++++++++", oneRoutePointAllMarkers);
+      saveAdditionalMarkersextra(i, oneRoutePointAllMarkers);
+    }
+
+    // setAllAdditionalMarkersOnEdit((prevArray) => {
+
+    //   for (let i = 0; i < allRoutePointsDescriptions.length; i++) {
+    //     // const element = allRoutePointsDescriptions[i];
+    //     for (let j = 0; j < additionalPointsFromDB.length; j++) {
+    //       const element2 = additionalPointsFromDB[j];
+    //       if (element2.pointId == allRoutePointsDescriptions[i].pointId) {
+    //         if (allAdditionalMarkersOnEdit[element.pointOnRouteId] != null) {
+    //           const updatedArray = [...prevArray];
+    //           updatedArray[element.pointOnRouteId] = {
+    //             pointId: element2.pointId,
+    //             desc: element2.desc,
+    //             lat: element2.lat,
+    //             lng: element2.lng,
+    //           }; //additionalPointsFromDB
+    //           return updatedArray;
+    //         } else if (allAdditionalMarkersOnEdit[element.pointOnRouteId] == undefined) {
+    //           const updatedArray = [...prevArray];
+    //           updatedArray[element.pointOnRouteId] = {
+    //             pointId: element2.pointId,
+    //             desc: element2.desc,
+    //             lat: element2.lat,
+    //             lng: element2.lng,
+    //           }; //additionalPointsFromDB
+    //           return updatedArray;
+    //         } else {
+    //           return [
+    //             ...prevArray,
+    //             {
+    //               pointId: element2.pointId,
+    //               desc: element2.desc,
+    //               lat: element2.lat,
+    //               lng: element2.lng,
+    //             },
+    //           ]; //additionalPointsFromDB
+    //         }
+    //       } else {
+    //         // continue;
+    //       }
+    //     }
+    //   }
+    // });
+  };
+
   const onMapLoad = (map) => {
     setMap(map);
     testas();
   };
   async function getMapPointsPlacesIds(results) {
     //Setup all marked places ids
-    console.log("results", results);
+    // console.log("results", results);
     const allMapPlaces = [];
     results.geocoded_waypoints.map((item) => {
       if (item === null) {
@@ -192,7 +352,7 @@ export default function PrivateRoutePreview(textas) {
         return item;
       }
     });
-    console.log("allMapPlaces", allMapPlaces);
+    // console.log("allMapPlaces", allMapPlaces);
     getAllMapPointsLocations(allMapPlaces);
   }
   async function getAllMapPointsLocations(allMapPlaces) {
@@ -229,10 +389,10 @@ export default function PrivateRoutePreview(textas) {
         if (data.origin === "" || data.destination === "") {
           return;
         }
-        console.log("allRouteMidWaypoints---", allRouteMidWaypoints);
+        // console.log("allRouteMidWaypoints---", allRouteMidWaypoints);
         // eslint-disable-next-line no-undef
         const directionsService = new google.maps.DirectionsService();
-        console.log("directionsService", directionsService);
+        // console.log("directionsService", directionsService);
         const results = await directionsService.route({
           origin: data.rOrigin,
           waypoints: allRouteMidWaypoints,
@@ -247,7 +407,7 @@ export default function PrivateRoutePreview(textas) {
         reloadDirectionsRenderer();
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       setError("Failed to load.");
     }
   }
@@ -259,25 +419,21 @@ export default function PrivateRoutePreview(textas) {
     }
   };
   const changeTextAreaValueByPoint = (item) => (event) => {
-    console.log("allMapPlaces", allMapPlaces);
     const centerPoint = {
       lat: allMapPlaces[item.pointOnRouteId].point_Location_X,
       lng: allMapPlaces[item.pointOnRouteId].point_Location_Y,
     };
-    console.log(item.pointOnRouteId);
-    // map.setCenter(centerPoint);
-    // const geocoder = new google.maps.Geocoder();
-    // geocoder.geocode({}).then(({}) => {
-    //   map.setZoom(11);
-    //   map.setCenter(centerPoint);
-    // });
 
-    // console.log("item.geometry.location", allMapPlacesIds);
-    console.log("item", item);
     setCenterByPoint(centerPoint);
     setZoomByPoint(11);
     setPointDescriptionValue(item.routePointDescription);
+    setPointIdIsEditing(item.pointId);
+    console.log("aaa", item.routePointDescription);
     setChoosenRouteMarkForAdditionalTable(item.pointOnRouteId);
+
+    console.log("AllAdditionalMarkersOnEdit ", allAdditionalMarkersOnEdit);
+
+    // console.log("choosenRouteMarkForAdditionalTable", choosenRouteMarkForAdditionalTable);
   };
   //-----
 
@@ -286,52 +442,123 @@ export default function PrivateRoutePreview(textas) {
       lat: event.latLng.lat(),
       lng: event.latLng.lng(),
     });
-    console.log("event.latLng.lat() : ", event.latLng.lat());
-    console.log("event.latLng.lat() : ", event.latLng.lng());
+    // console.log("event.latLng.lat() : ", event.latLng.lat());
+    // console.log("event.latLng.lat() : ", event.latLng.lng());
   };
   const handleSaveNewExtraCoords = (event) => {
-    console.log("handleSaveNewExtraCoords", markerPosition);
-    console.log(additionalMarkersOnEdit.length);
     if (additionalMarkersOnEdit.length == 5 || additionalMarkersOnEdit.length > 5) {
-      console.log("Max amount of extra marks");
-
-      console.log("1-additionalMarkersOnEdit", additionalMarkersOnEdit);
     } else if (additionalMarkersOnEdit.length < 5) {
       setAdditionalMarkersOnEdit((prevPositions) => [
         ...prevPositions,
-        { lat: markerPosition.lat, lng: markerPosition.lng },
+        { pointId: pointIdIsEditing, desc: "", lat: markerPosition.lat, lng: markerPosition.lng }, // desc: "aa", STRUCTURE
       ]);
-      console.log("2-additionalMarkersOnEdit", additionalMarkersOnEdit);
+      setToggleAdditionalButton(true);
     }
   };
-  const targetExtraPointOnMap = (item) => (event) => {
+  const saveNewRecommendationText = (event) => {
+    console.log("newRecommendationTextURL", newRecommendationTextURL);
+    if (newRecommendationTextURL != null && newRecommendationTextURL != "") {
+      if (newRecommendationTextURL.length < 10) {
+        console.log("Please insert https link");
+      } else {
+        axios
+          .post(
+            "http://localhost:5113/api/troutesprivate/" +
+              location.state.message.routeId +
+              "/recommendationurl",
+            {
+              rRecommendationUrlLink: newRecommendationTextURL,
+            }
+            // { headers }
+          )
+          .then((response) => {
+            const item = response.data; // Assuming the response data is an array with one item
+            if (item !== null) {
+              setAllRecommendationsUrlsForRoute((prevArray) => {
+                const updatedArray = [...prevArray];
+                updatedArray[allRecommendationsUrlsForRoute.length] = {
+                  rRecommendationUrlId: item.rRecommendationUrlId,
+                  rRecommendationUrlLink: item.rRecommendationUrlLink,
+                  tRoutePrivaterouteId: item.tRoutePrivaterouteId,
+                };
+                return updatedArray;
+              });
+            }
+          });
+      }
+    }
+  };
+
+  function handleNewRecommendationText(event) {
+    setNewRecommendationTextURL(event.target.value);
+  }
+
+  function handleAdditionalMarkerDescription() {
+    const val = document.getElementById("add-m-d").value;
+    console.log(additionalMarkerDescription.id, "val", val);
+    setAdditionalMarkerDescription({ id: additionalMarkerDescription.id, desc: val });
+    // allAdditionalMarkersOnEdit[additionalMarkerDescription.id] == val;
+    if (
+      allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable][additionalMarkerDescription.id]
+        .desc != undefined
+    ) {
+      allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable][
+        additionalMarkerDescription.id
+      ].desc = val;
+    }
+    console.log("//////////////////", allAdditionalMarkersOnEdit);
+  }
+  const targetExtraPointOnMap = (item, id) => (event) => {
+    console.log("7777777777777777", item);
     const centerPoint = {
+      // desc: additionalMarkerDescription,
       lat: item.lat,
       lng: item.lng,
     };
+    setAdditionalMarkerDescription({ id: id, desc: item.desc });
+    // console.log("item.desc", item.desc, "-id:", id);
     setCenterByPoint(centerPoint);
     setZoomByPoint(9);
-    // setPointDescriptionValue(item.routePointDescription);
+    // console.log("item", item);
+    if (item.desc == null && document.getElementById("add-m-d")) {
+      console.log("item.desc", item.desc);
+      document.getElementById("add-m-d").value = "";
+    } else if (document.getElementById("add-m-d")) {
+      console.log("item.desc", item.desc);
+      document.getElementById("add-m-d").value = item.desc;
+    }
   };
-  // const saveAdditionalMarkers = () => {
-  //   console.log("saveAdditionalMarkers");
-  //   setAllAdditionalMarkersOnEdit((prevPositions) => [
-  //     ...prevPositions,
-  //     additionalMarkersOnEdit,
-  //     // { id: choosenRouteMarkForAdditionalTable, additionalMarkersOnEdit },
-  //   ]);
-
-  //   console.log("-----", allAdditionalMarkersOnEdit);
-  // };
-
+  const saveAdditionalMarkersextra = (index, additionalMarkersOnEditextra) => {
+    console.log("AllAdditionalMarkersOnEdit", allAdditionalMarkersOnEdit);
+    console.log("allAdditionalMarkersOnEdit");
+    setAllAdditionalMarkersOnEdit((prevArray) => {
+      if (allAdditionalMarkersOnEdit[index] != null) {
+        setToggleAdditionalButton(false);
+        const updatedArray = [...prevArray];
+        updatedArray[index] = additionalMarkersOnEditextra;
+        return updatedArray;
+      } else if (allAdditionalMarkersOnEdit[index] == undefined) {
+        setToggleAdditionalButton(false);
+        const updatedArray = [...prevArray];
+        updatedArray[index] = additionalMarkersOnEditextra;
+        return updatedArray;
+      } else {
+        return [...prevArray, additionalMarkersOnEditextra];
+      }
+    });
+    console.log("setAllAdditionalMarkersOnEdit: ", allAdditionalMarkersOnEdit);
+    setAdditionalMarkersOnEdit([]);
+  };
   const saveAdditionalMarkers = () => {
-    console.log("saveAdditionalMarkers");
+    console.log("AllAdditionalMarkersOnEdit", allAdditionalMarkersOnEdit);
     setAllAdditionalMarkersOnEdit((prevArray) => {
       if (allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] != null) {
+        setToggleAdditionalButton(false);
         const updatedArray = [...prevArray];
         updatedArray[choosenRouteMarkForAdditionalTable] = additionalMarkersOnEdit;
         return updatedArray;
       } else if (allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] == undefined) {
+        setToggleAdditionalButton(false);
         const updatedArray = [...prevArray];
         updatedArray[choosenRouteMarkForAdditionalTable] = additionalMarkersOnEdit;
         return updatedArray;
@@ -339,46 +566,97 @@ export default function PrivateRoutePreview(textas) {
         return [...prevArray, additionalMarkersOnEdit];
       }
     });
+    console.log("setAllAdditionalMarkersOnEdit: ", allAdditionalMarkersOnEdit);
     setAdditionalMarkersOnEdit([]);
-    console.log("-----", allAdditionalMarkersOnEdit);
   };
-  // const saveAdditionalMarkers = () => {
-  //   console.log("saveAdditionalMarkers");
-  //   setAllAdditionalMarkersOnEdit((prevPositions) => {
-  //     // const itemIndex = prevPositions.findIndex(
-  //     //   (item) => (
-  //     //     console.log("item", item),
-  //     //     console.log("item.id", item.id),
-  //     //     item.id === choosenRouteMarkForAdditionalTable
-  //     //   )
-  //     // );
-  //     // console.log("itemIndex:", itemIndex);
-  //     if (allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] != null) {
-  //       console.log("!= null");
+  const removeRecommendationLocal = (id, recommendation_id_db, recommendation_routeid_db) => {
+    console.log("allRecommendationsUrlsForRoute", allRecommendationsUrlsForRoute);
+    console.log("id", id);
+    axios
+      .delete(
+        "http://localhost:5113/api/troutesprivate/" +
+          location.state.message.routeId +
+          "/recommendationurl/" +
+          recommendation_id_db
+      )
+      .then((response) => {
+        console.log(response.data); // Log response data if the request was successful
+      })
+      .catch((error) => {
+        console.log(error); // Log error if the request was unsuccessful
+      });
+    const newArray = [...allRecommendationsUrlsForRoute];
+    newArray.splice(id, 1);
 
-  //       allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] = {
-  //         additionalMarkersOnEdit,
-  //       };
+    setAllRecommendationsUrlsForRoute(newArray);
+  };
+  const SaveAllChangesToDB = () => {
+    console.log(
+      "******************allAdditionalMarkersOnEdit****************",
+      allAdditionalMarkersOnEdit
+    );
 
-  //       // // Overwrite the existing item with the same id
-  //       // const updatedPositions = [...prevPositions];
-  //       // updatedPositions[choosenRouteMarkForAdditionalTable] = {
-  //       //   // id: choosenRouteMarkForAdditionalTable,
-  //       //   additionalMarkersOnEdit,
-  //       // };
-  //       return allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable];
-  //     } else {
-  //       // Add the new item to the array
-  //       return [
-  //         ...prevPositions,
-  //         additionalMarkersOnEdit,
-  //         // { id: choosenRouteMarkForAdditionalTable, ...additionalMarkersOnEdit },
-  //       ];
-  //     }
-  //   });
-  //   setAdditionalMarkersOnEdit([]);
-  //   console.log("-----", allAdditionalMarkersOnEdit);
-  // };
+    if (!allAdditionalMarkersOnEdit) {
+      console.log("allAdditionalMarkersOnEdit is undefined or null");
+      return;
+    }
+    const extra = allAdditionalMarkersOnEdit.map((item, index) =>
+      item
+        ? item.map((itemB, j) => {
+            if (!itemB) {
+              console.log("---");
+              return null; // or handle the null case as needed
+            }
+            return {
+              additionalPointRouteId: location.state.message.routeId,
+              additionalPointIdInList: j,
+              additionalPointCoordX: itemB.lat,
+              additionalPointCoordY: itemB.lng,
+              additionalPointInformation: itemB.desc,
+              TroutePointDescriptionpointId: itemB.pointId, //pointIdIsEditing, // BLOGAI
+              // TroutePointDescriptionpointId: index,
+            };
+          })
+        : []
+    );
+    console.log("extra", extra);
+    setAllAdditionalMarkersForDB(extra);
+  };
+  function updateRouteToDB() {
+    console.log("DB");
+    // console.log("++++allAdditionalMarkersOnEdit", allAdditionalMarkersOnEdit);
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userInfo = jwt_decode(user.accessToken);
+    const data = location.state.message;
+    console.log(data);
+    console.log("allRoutePointsDescriptions-----", allRoutePointsDescriptions);
+    console.log("++++++++allRecommendationsUrlsForRoute-----", allRecommendationsUrlsForRoute);
+    axios
+      .put("http://localhost:5113/api/troutesprivate/" + location.state.message.routeId, {
+        rOrigin: data.rOrigin,
+        rDestination: data.rDestination,
+        rCountry: "LT", //data.rCountry,
+        rImagesUrl: allImagesUrlsForRoute,
+        rRecommendationUrl: allRecommendationsUrlsForRoute,
+        midWaypoints: allRouteMidWaypoints,
+        pointDescriptions: allRoutePointsDescriptions,
+        additionalMarkers: allAdditionalMarkersForDB, // update in useEffect
+        UserId: userInfo.sub,
+      })
+      .then((response) => {
+        console.log(response.data);
+        return response.data;
+      })
+      .catch((err) => console.log("err", err));
+
+    // console.log("allRouteMidWaypoints", allRouteMidWaypoints);
+    // console.log("allRoutePointsDescriptions", allRoutePointsDescriptions);
+    // console.log("allAdditionalMarkersOnEdit", allAdditionalMarkersOnEdit);
+    // console.log("allImagesUrlsForRoute", allImagesUrlsForRoute);
+    // console.log("allRecommendationsUrlsForRoute", allRecommendationsUrlsForRoute);
+    console.log("location.state.message", location.state.message.routeId);
+  }
+
   //-----
   const location = useLocation();
   if (!isLoaded) {
@@ -411,7 +689,10 @@ export default function PrivateRoutePreview(textas) {
         {location.state.message.rName}
       </h1>
       <div className="publish-button">
-        <button onClick={saveAdditionalMarkers}>Save markers DB</button>
+        {/* TODO */}
+        {/* <button onClick={updateRouteToDB}>Save markers DB</button> */}
+        <button onClick={SaveAllChangesToDB}>Save changes</button>
+
         <button>Publish</button>
       </div>
       <div className="preview-container-main">
@@ -419,18 +700,37 @@ export default function PrivateRoutePreview(textas) {
           <div className="private-container-main-left top">
             <h1>{location.state.message.rCountry}</h1>
           </div>
-          <div className="private-container-main-left buttons">
-            {allRoutePointsDescriptions.map((item) => (
-              <button onClick={changeTextAreaValueByPoint(item)}>{item.pointOnRouteId}</button>
-            ))}
-          </div>
+          {allRoutePointsDescriptions.length > 5 && (
+            <div className="private-container-main-left buttons">
+              <div style={{ display: "block" }}>
+                {allRoutePointsDescriptions.map((item, indexas) => (
+                  <>
+                    <button onClick={changeTextAreaValueByPoint(item)}>
+                      {/* {item.pointOnRouteId + 1} */}
+                      {item.pointId}
+                    </button>
+                    {indexas === 4 ? <br /> : null}
+                  </>
+                ))}
+              </div>
+            </div>
+          )}
+          {allRoutePointsDescriptions.length <= 5 && (
+            <div className="private-container-main-left buttons">
+              {allRoutePointsDescriptions.map((item) => (
+                <button onClick={changeTextAreaValueByPoint(item)}>{item.pointId}</button>
+              ))}
+            </div>
+          )}
           <textarea
             className="private-container-main-left"
-            // rows="4"
-            // cols="20"
+            id="add-r-p-d"
+            rows="4"
+            cols="20"
             placeholder="There is no content!"
             value={pointDescriptionValue}
-            readOnly
+            // defaultValue={""}
+            // readOnly
           />
           <div
             style={{
@@ -441,11 +741,55 @@ export default function PrivateRoutePreview(textas) {
               width: "100%",
             }}
           >
+            {/* TODO */}
             <h3>Recommendations</h3>
+            {allRecommendationsUrlsForRoute && (
+              <div style={{ display: "block" }}>
+                {allRecommendationsUrlsForRoute.map((recommendation, i) => (
+                  <div
+                    style={{
+                      display: "flex",
+                      width: "80%",
+                      margin: "auto",
+                      justifyContent: "space-around",
+                    }}
+                    key={i}
+                  >
+                    <p style={{ margin: "0px 0px 4px" }} alt={`Recommendation ${i}`}>
+                      {recommendation.rRecommendationUrlLink}
+                    </p>
+                    <p className="recommendation-delete">
+                      {
+                        <RiDeleteBackFill
+                          onClick={() =>
+                            removeRecommendationLocal(
+                              i,
+                              recommendation.rRecommendationUrlId,
+                              recommendation.tRoutePrivaterouteId
+                            )
+                          }
+                        />
+                      }
+                    </p>
+                  </div>
+                ))}
+                <input
+                  style={{ width: "250px", textAlign: "center" }}
+                  type="text"
+                  placeholder="Enter recommendation URL"
+                  onChange={handleNewRecommendationText}
+                ></input>
+                <CiSaveDown1
+                  size={30}
+                  className="styled-CiSaveDown1"
+                  onClick={saveNewRecommendationText}
+                />
+              </div>
+            )}
             <p>{location.state.message.rRecommendationUrl}</p>
           </div>
         </div>
-        <div className="preview-container-main-right">
+        <div className="preview-container-main-right" style={{ margin: "auto" }}>
           {isPageContentLoaded && (
             <GoogleMap
               center={centerByPoint || centerPoint}
@@ -461,7 +805,8 @@ export default function PrivateRoutePreview(textas) {
               onClick={handleMapClick}
             >
               {markerPosition && <Marker position={markerPosition} />}
-              {console.log("markerPosition", markerPosition)}
+              {/* {console.log("markerPosition", markerPosition)} */}
+              {console.log(allAdditionalMarkersOnEdit)}
               {allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] &&
                 allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable].map((item) => (
                   <Marker position={{ lat: item.lat, lng: item.lng }} />
@@ -483,8 +828,8 @@ export default function PrivateRoutePreview(textas) {
           <div className="float-over-map">
             {markerPosition && (
               <>
-                <p>Latitude: {markerPosition.lat}</p>
-                <p>Longtitude: {markerPosition.lat}</p>
+                <p>Latitude: {markerPosition.lat.toFixed(7)}</p>
+                <p>Longtitude: {markerPosition.lat.toFixed(7)}</p>
                 <MdDataSaverOn
                   size={50}
                   className="float-over-map-MdDataSaverOn"
@@ -494,44 +839,66 @@ export default function PrivateRoutePreview(textas) {
             )}
           </div>
         </div>
-
-        <div style={{ display: "block" }} className="private-container-main-left additional-table">
-          <div className="private-container-main-left top">
-            <h1>{location.state.message.rName}</h1>
-          </div>
-          <div className="private-container-main-left buttons">
-            {console.log("choosenRouteMarkForAdditionalTable", choosenRouteMarkForAdditionalTable)}
-            {console.log("allAdditionalMarkersOnEdit", allAdditionalMarkersOnEdit)}
-            {console.log(
-              "allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable]",
-              allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable]
+        {choosenRouteMarkForAdditionalTable != null && (
+          <div
+            style={{ display: "block" }}
+            className="private-container-main-left additional-table"
+          >
+            <div className="private-container-main-left top">
+              <h3>Points manager</h3>
+              {/* <h1>{location.state.message.rCountry}</h1> */}
+            </div>
+            <div className="private-container-main-left buttons">
+              {/* {console.log(
+                "choosenRouteMarkForAdditionalTable",
+                choosenRouteMarkForAdditionalTable
+              )}
+              {console.log("allAdditionalMarkersOnEdit", allAdditionalMarkersOnEdit)}
+              {console.log(
+                "allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable]",
+                allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable]
+              )} */}
+              {/* TODO1 */}
+              {allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] &&
+                allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable].map((itemA, i) => (
+                  <button id="aaaaa" onClick={targetExtraPointOnMap(itemA, i)} key={i}>
+                    {i}
+                  </button>
+                ))}
+            </div>
+            {additionalMarkerDescription && (
+              <div>
+                <textarea
+                  id="add-m-d"
+                  rows="4"
+                  cols="50"
+                  placeholder="There is no content!"
+                  // defaultValue={
+                  //   (additionalMarkerDescription.id &&
+                  //     allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable][
+                  //       additionalMarkerDescription.id
+                  //     ].desc != undefined) ||
+                  //   ""
+                  // }
+                  defaultValue={""}
+                  onChange={handleAdditionalMarkerDescription}
+                ></textarea>
+                {/* <button onClick={handleAdditionalMarkerDescription}>Save</button> */}
+              </div>
             )}
-            {allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] &&
-              allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable].map((itemA, i) => (
-                <button onClick={targetExtraPointOnMap(itemA)} key={i}>
-                  {i}
-                </button>
+            {additionalMarkersOnEdit &&
+              additionalMarkersOnEdit.map((item, i) => (
+                <p key={i}>
+                  {item.lat} - {item.lng}
+                </p>
               ))}
+            {toggleAdditionalButton && ( //!additionalMarkerDescription &&
+              <button className="additional-markers-button" onClick={saveAdditionalMarkers}>
+                Save markers - local
+              </button>
+            )}
           </div>
-          <textarea
-            rows="4"
-            cols="50"
-            placeholder="There is no content!"
-            value={pointDescriptionValue}
-            readOnly
-          />
-          {additionalMarkersOnEdit &&
-            additionalMarkersOnEdit.map((item, i) => (
-              <p key={i}>
-                {item.lat} - {item.lng}
-              </p>
-            ))}
-          {additionalMarkersOnEdit && (
-            <button className="additional-markers-button" onClick={saveAdditionalMarkers}>
-              Save markers - local
-            </button>
-          )}
-        </div>
+        )}
       </div>
       {/* IMAGES */}
       {/* {console.log("location.state.message.rImagesUrl:", location.state.message.rImagesUrl)}
@@ -542,11 +909,11 @@ export default function PrivateRoutePreview(textas) {
           <Slider {...settings}>
             {allImagesUrlsForRoute.map((image, i) => (
               <div key={i}>
-                {console.log("i++++++++++", i)}
-                {console.log("image_url++++++++++", image.image_url)}
+                {/* {console.log("i++++++++++", i)}
+                {console.log("image_url++++++++++", image.image_url)} */}
                 <img
                   style={{ display: "block", margin: "auto" }}
-                  src={image.image_url}
+                  src={image.rImagesUrlLink}
                   alt={`Slide ${i}`}
                 />
               </div>

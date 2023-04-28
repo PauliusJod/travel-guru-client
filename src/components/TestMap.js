@@ -224,6 +224,7 @@ export default function TestMap() {
     const updatedInputsValues = [...savePointInputValues];
     updatedInputsValues[e.target.id] = e.target.value;
     setSavePointInputValues(updatedInputsValues);
+    console.log("updatedInputsValues", updatedInputsValues);
     console.log(e.target.id);
     console.log("savePointInputValues", savePointInputValues);
   };
@@ -470,8 +471,10 @@ export default function TestMap() {
     routeMarkersLocations.push({
       location: destiantionRef.current.value,
     });
-
+    console.log("fixedWaypoints2.length", fixedWaypoints2.length);
+    setSavePointInputValues(Array.from({ length: fixedWaypoints2.length + 2 }).fill(""));
     console.log(routeMarkersLocations);
+    console.log("-----=-=-=-=-=:", savePointInputValues);
     //REIKIA PERDUOTI
     /*
 originRef.current.value
@@ -597,9 +600,11 @@ destiantionRef.current.value
     const descForDB = [];
     console.log("convertPointDescriptionsForDb", savedPointsValues);
     savedPointsValues.map((item, i) => {
-      if (item === null || item === "") {
+      if (item === null) {
+        //|| item === ""
         return item;
       } else {
+        console.log("item", item);
         descForDB.push({
           pointOnRouteId: i,
           routePointDescription: item,
@@ -649,6 +654,8 @@ destiantionRef.current.value
     console.log(exportData.origin);
     console.log(exportData.midWaypoints);
     console.log(exportData.destiantion);
+    console.log("sectionDescForDB", sectionDescForDB);
+    console.log("pointDescForDB", pointDescForDB);
     axios
       .post(
         "http://localhost:5113/api/troutesprivate",
@@ -676,7 +683,7 @@ destiantionRef.current.value
           ], // "https://www.google.com/",
         },
         { headers }
-      )
+      ) //"{"rname":"Unnamed","rOrigin":"Kaunas, Kauno m. sav., Lietuva","rDestination":"Vilnius, Vilniaus m. sav., Lietuva","midWaypoints":[{"midWaypointLocation":"Telšiai, Telšių rajono savivaldybė, Lietuva","midWaypointStopover":true},{"midWaypointLocation":"Biržai, Biržų rajono savivaldybė, Lietuva","midWaypointStopover":true},{"midWaypointLocation":"Utena, Utenos r. sav., Lietuva","midWaypointStopover":true}],"sectionDescriptions":[],"pointDescriptions":[{"pointOnRouteId":1},{"pointOnRouteId":2,"routePointDescription":"birzaiii"}],"rCountry":"Unknown","rImagesUrl":[{"rImagesUrlLink":"https://images.unsplash.com/photo-1503220317375-aaad61436b1b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTd8fHRyYXZlbHxlbnwwfHwwfHw%3D&w=1000&q=80"},{"rImagesUrlLink":"https://images.unsplash.com/photo-1545389336-cf090694435e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8M3x8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=60"}],"rRecommendationUrl":[{"rRecommendationUrlLink":"https://www.google.com/"},{"rRecommendationUrlLink":"https://cloud.google.com/"}]}"
       .then((response) => console.log(response))
       .catch((err) => console.log(err));
 
