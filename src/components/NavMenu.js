@@ -23,7 +23,7 @@ export class NavMenu extends Component {
 
   render() {
     const user = JSON.parse(localStorage.getItem("user"));
-    console.log(user);
+    console.log("NavMenu:", user);
     return (
       <header>
         <Navbar
@@ -94,7 +94,7 @@ export class NavMenu extends Component {
               </NavItem>
               <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/testMap">
-                  testMap
+                  Create route
                 </NavLink>
               </NavItem>
               <NavItem>
@@ -116,10 +116,15 @@ export class NavMenu extends Component {
                 </NavLink>
               </NavItem>
               <NavItem>
+                <NavLink tag={Link} className="text-dark" to="/mapsGallery">
+                  Maps Gallery
+                </NavLink>
+              </NavItem>
+              {/* <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/testMap">
                   testMap
                 </NavLink>
-              </NavItem>
+              </NavItem> */}
               <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/login">
                   Prisijungimas

@@ -25,12 +25,10 @@ export default function Profile() {
 
     setUserName(userInfo["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]);
     async function GetRoutesFromDatabase() {
-      axios
-        .get("http://localhost:5113/api/troutesprivate/usercreated/" + userInfo.sub)
-        .then((resp) => {
-          //store data loaded
-          setAllUserCreatedRoutes(resp.data);
-        });
+      axios.get("http://localhost:5113/api/troutes/usercreated/" + userInfo.sub).then((resp) => {
+        //store data loaded
+        setAllUserCreatedRoutes(resp.data);
+      });
     }
     GetRoutesFromDatabase();
   }, []);

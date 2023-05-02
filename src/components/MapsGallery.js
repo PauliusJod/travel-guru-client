@@ -15,7 +15,7 @@ export default function MapsGallery() {
 
   useEffect(() => {
     async function GetRoutesFromDatabase() {
-      axios.get("http://localhost:5113/api/troutesprivate/").then((resp) => {
+      axios.get("http://localhost:5113/api/troutes/public/").then((resp) => {
         //store data loaded
         setAllRoutes(resp.data);
         console.log("resp.data", resp.data);
@@ -28,7 +28,7 @@ export default function MapsGallery() {
     navigate("/previewTripMap", { state: { message: item } });
   }
   return (
-    <div className="grid-container">
+    <div className="grid-container-gallery">
       {allRoutes.map((oneRoute) => (
         <div key={oneRoute.routeId}>
           <div
@@ -45,6 +45,7 @@ export default function MapsGallery() {
               height="200"
               onClick={() => handleClick(oneRoute)}
             ></img>
+            <p style={{ fontSize: "24px", margin: "5px" }}>{oneRoute.rName}</p>
           </div>
         </div>
       ))}

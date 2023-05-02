@@ -658,7 +658,7 @@ destiantionRef.current.value
     console.log("pointDescForDB", pointDescForDB);
     axios
       .post(
-        "http://localhost:5113/api/troutesprivate",
+        "http://localhost:5113/api/troutes",
         {
           rname: routeName,
           rOrigin: exportData.origin,

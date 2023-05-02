@@ -50,6 +50,8 @@ export default function PrivateRoutePreview(textas) {
   //SET on AXIOS GET -----------------------------------------------------------------------
   //SET local handlers+++++++++++++++++++++++++++++++
   const [newRecommendationTextURL, setNewRecommendationTextURL] = useState("");
+  const [newRoutePointTextChanges, setNewRoutePointTextChanges] = useState("");
+
   //SET local handlers+++++++++++++++++++++++++++++++
 
   const [pointDescriptionValue, setPointDescriptionValue] = useState(null);
@@ -72,15 +74,13 @@ export default function PrivateRoutePreview(textas) {
     useState(null);
   //----
   const settings = {
-    // className: "preview-images-container", // gadina uzkrovima
     dots: true,
     dotsClass: "slick-dots",
     accessibility: true,
     adaptiveHeight: false,
+    variableWidth: false,
     infinite: true,
     speed: 500,
-    // autoplay: false,
-    // autoplaySpeed: 3000,
     centerMode: true,
     slidesToShow: 1,
     initialSlide: 1,
@@ -95,9 +95,7 @@ export default function PrivateRoutePreview(textas) {
       // console.log("aaa");
       axios
         .get(
-          "http://localhost:5113/api/troutesprivate/" +
-            location.state.message.routeId +
-            "/midwaypoints"
+          "http://localhost:5113/api/troutes/" + location.state.message.routeId + "/midwaypoints"
         )
         .then((resp) => {
           const midwaypointsFromDB = [];
@@ -134,31 +132,10 @@ export default function PrivateRoutePreview(textas) {
     }
   }, [additionalPointsFromDB, allRoutePointsDescriptions]);
 
-  // .post(
-  //   "http://localhost:5113/api/troutesprivate",
-  //   {
-  //     rname: "My trip to Italy",
-  //     rOrigin: exportData.origin,
-  //     rDestination: exportData.destiantion,
-  //     midWaypoints: exportData.midWaypoints,
-  //     sectionDescriptions: sectionDescForDB,
-  //     pointDescriptions: pointDescForDB,
-  //     rCountry: "Italy",
-  //     rImagesUrl:
-  //       "https://images.unsplash.com/photo-1503220317375-aaad61436b1b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTd8fHRyYXZlbHxlbnwwfHwwfHw%3D&w=1000&q=80",
-  //     rRecommendationUrl: "https://www.google.com/",
-  //   },
-  //   { headers }
-  // )
-
   async function GetPointsDescFromDatabase() {
-    // console.log("GetPointsDescFromDatabase");
+    console.log("setAllRouteMidWaypoints", allRouteMidWaypoints);
     axios
-      .get(
-        "http://localhost:5113/api/troutesprivate/" +
-          location.state.message.routeId +
-          "/routepoints"
-      )
+      .get("http://localhost:5113/api/troutes/" + location.state.message.routeId + "/routepoints")
       .then((resp) => {
         // console.log("resp.data", resp.data);
         const pointsDescFromDB = [];
@@ -180,13 +157,9 @@ export default function PrivateRoutePreview(textas) {
       });
   }
   async function GetImagesUrlsFromDatabase() {
-    // console.log("GetImagesUrlsFromDatabase");
     axios
-      .get(
-        "http://localhost:5113/api/troutesprivate/" + location.state.message.routeId + "/imageurl"
-      )
+      .get("http://localhost:5113/api/troutes/" + location.state.message.routeId + "/imageurl")
       .then((resp) => {
-        // console.log("-----------------------------------------", resp.data);
         const imagesUrlsFromDB = [];
         resp.data.map((item) => {
           if (item.current === null) {
@@ -198,17 +171,13 @@ export default function PrivateRoutePreview(textas) {
             return item;
           }
         });
-        // console.log("GetImagesUrlsFromDatabase: ", imagesUrlsFromDB);
         setAllImagesUrlsForRoute(imagesUrlsFromDB);
-        // setIsPageContentLoaded(true);
       });
   }
   async function GetRecommendationsUrlsFromDatabase() {
     axios
       .get(
-        "http://localhost:5113/api/troutesprivate/" +
-          location.state.message.routeId +
-          "/recommendationurl"
+        "http://localhost:5113/api/troutes/" + location.state.message.routeId + "/recommendationurl"
       )
       .then((resp) => {
         console.log("recommendations: ", resp.data);
@@ -226,15 +195,12 @@ export default function PrivateRoutePreview(textas) {
           }
         });
         setAllRecommendationsUrlsForRoute(recommendationsUrlsFromDB);
-        // setIsPageContentLoaded(true);
       });
   }
   async function GetAdditionalPointsFromDatabase() {
     axios
       .get(
-        "http://localhost:5113/api/troutesprivate/" +
-          location.state.message.routeId +
-          "/additionalpoints"
+        "http://localhost:5113/api/troutes/" + location.state.message.routeId + "/additionalpoints"
       )
       .then((resp) => {
         const additionalPointsFromDBTemp = [];
@@ -243,7 +209,6 @@ export default function PrivateRoutePreview(textas) {
           if (item.current === null) {
             return item;
           } else {
-            //pointId: pointIdIsEditing, desc: "", lat: markerPosition.lat, lng: markerPosition.lng
             additionalPointsFromDBTemp.push({
               pointId: item.troutePointDescriptionpointId,
               desc: item.additionalPointInformation,
@@ -254,17 +219,10 @@ export default function PrivateRoutePreview(textas) {
           }
         });
         setAdditionalPointsFromDB(additionalPointsFromDBTemp);
-        console.log("+++++++++++++++", additionalPointsFromDBTemp);
       })
       .catch((err) => console.log("err", err));
   }
   const testasaa = () => {
-    // pointsDescFromDB pointOnRouteId =choosen.. pointId == pointId(additional)        setAllRoutePointsDescriptions
-    // additionalPointsFromDB     additionalPointsFromDB
-    //saveAdditionalMarkers();
-    console.log("00000000000000", allRoutePointsDescriptions);
-    console.log("88888888888888888", additionalPointsFromDB);
-
     for (let i = 0; i < allRoutePointsDescriptions.length; i++) {
       const oneRoutePointAllMarkers = [];
       for (let j = 0; j < additionalPointsFromDB.length; j++) {
@@ -277,9 +235,6 @@ export default function PrivateRoutePreview(textas) {
             lat: element2.lat,
             lng: element2.lng,
           });
-          // break;
-        } else {
-          // break;
         }
         // setAdditionalMarkersOnEdit((prevPositions) => [
         //   ...prevPositions,
@@ -289,49 +244,6 @@ export default function PrivateRoutePreview(textas) {
       console.log("++++++++++++++++++++++++", oneRoutePointAllMarkers);
       saveAdditionalMarkersextra(i, oneRoutePointAllMarkers);
     }
-
-    // setAllAdditionalMarkersOnEdit((prevArray) => {
-
-    //   for (let i = 0; i < allRoutePointsDescriptions.length; i++) {
-    //     // const element = allRoutePointsDescriptions[i];
-    //     for (let j = 0; j < additionalPointsFromDB.length; j++) {
-    //       const element2 = additionalPointsFromDB[j];
-    //       if (element2.pointId == allRoutePointsDescriptions[i].pointId) {
-    //         if (allAdditionalMarkersOnEdit[element.pointOnRouteId] != null) {
-    //           const updatedArray = [...prevArray];
-    //           updatedArray[element.pointOnRouteId] = {
-    //             pointId: element2.pointId,
-    //             desc: element2.desc,
-    //             lat: element2.lat,
-    //             lng: element2.lng,
-    //           }; //additionalPointsFromDB
-    //           return updatedArray;
-    //         } else if (allAdditionalMarkersOnEdit[element.pointOnRouteId] == undefined) {
-    //           const updatedArray = [...prevArray];
-    //           updatedArray[element.pointOnRouteId] = {
-    //             pointId: element2.pointId,
-    //             desc: element2.desc,
-    //             lat: element2.lat,
-    //             lng: element2.lng,
-    //           }; //additionalPointsFromDB
-    //           return updatedArray;
-    //         } else {
-    //           return [
-    //             ...prevArray,
-    //             {
-    //               pointId: element2.pointId,
-    //               desc: element2.desc,
-    //               lat: element2.lat,
-    //               lng: element2.lng,
-    //             },
-    //           ]; //additionalPointsFromDB
-    //         }
-    //       } else {
-    //         // continue;
-    //       }
-    //     }
-    //   }
-    // });
   };
 
   const onMapLoad = (map) => {
@@ -339,8 +251,6 @@ export default function PrivateRoutePreview(textas) {
     testas();
   };
   async function getMapPointsPlacesIds(results) {
-    //Setup all marked places ids
-    // console.log("results", results);
     const allMapPlaces = [];
     results.geocoded_waypoints.map((item) => {
       if (item === null) {
@@ -352,7 +262,6 @@ export default function PrivateRoutePreview(textas) {
         return item;
       }
     });
-    // console.log("allMapPlaces", allMapPlaces);
     getAllMapPointsLocations(allMapPlaces);
   }
   async function getAllMapPointsLocations(allMapPlaces) {
@@ -363,10 +272,12 @@ export default function PrivateRoutePreview(textas) {
       const promise = new Promise((resolve, reject) => {
         geocoder.geocode({ placeId: allMapPlaces[i].place_id }, (results, status) => {
           if (status === "OK") {
+            // console.log("565656565656", results[0].address_components[1].long_name);
             resolve({
               point_Place_Id: allMapPlaces[i].place_id,
               point_Location_X: results[0].geometry.location.lat(),
               point_Location_Y: results[0].geometry.location.lng(),
+              point_Name: results[0].address_components[1].long_name,
             });
           } else {
             reject(new Error("Geocode failed due to: " + status));
@@ -389,10 +300,8 @@ export default function PrivateRoutePreview(textas) {
         if (data.origin === "" || data.destination === "") {
           return;
         }
-        // console.log("allRouteMidWaypoints---", allRouteMidWaypoints);
         // eslint-disable-next-line no-undef
         const directionsService = new google.maps.DirectionsService();
-        // console.log("directionsService", directionsService);
         const results = await directionsService.route({
           origin: data.rOrigin,
           waypoints: allRouteMidWaypoints,
@@ -426,14 +335,13 @@ export default function PrivateRoutePreview(textas) {
 
     setCenterByPoint(centerPoint);
     setZoomByPoint(11);
+    setNewRoutePointTextChanges(item.routePointDescription);
     setPointDescriptionValue(item.routePointDescription);
     setPointIdIsEditing(item.pointId);
     console.log("aaa", item.routePointDescription);
     setChoosenRouteMarkForAdditionalTable(item.pointOnRouteId);
 
     console.log("AllAdditionalMarkersOnEdit ", allAdditionalMarkersOnEdit);
-
-    // console.log("choosenRouteMarkForAdditionalTable", choosenRouteMarkForAdditionalTable);
   };
   //-----
 
@@ -442,8 +350,6 @@ export default function PrivateRoutePreview(textas) {
       lat: event.latLng.lat(),
       lng: event.latLng.lng(),
     });
-    // console.log("event.latLng.lat() : ", event.latLng.lat());
-    // console.log("event.latLng.lat() : ", event.latLng.lng());
   };
   const handleSaveNewExtraCoords = (event) => {
     if (additionalMarkersOnEdit.length == 5 || additionalMarkersOnEdit.length > 5) {
@@ -455,6 +361,30 @@ export default function PrivateRoutePreview(textas) {
       setToggleAdditionalButton(true);
     }
   };
+  const saveDescriptionTextToDB = (event) => {
+    console.log("routeid: ", location.state.message.routeId);
+    console.log("pointIdIsEditing: ", pointIdIsEditing);
+    console.log("newRoutePointTextChanges", newRoutePointTextChanges);
+    var routeIdLocal = location.state.message.routeId;
+    var pointRouteIdLocal = pointIdIsEditing;
+    var pointDescriptionTextLocal = newRoutePointTextChanges;
+    axios
+      .put(
+        "http://localhost:5113/api/troutes/" + routeIdLocal + "/routepoints/" + pointRouteIdLocal,
+        {
+          pointId: pointRouteIdLocal,
+          routePointDescription: pointDescriptionTextLocal,
+          routeId: routeIdLocal,
+        }
+      )
+      .then((response) => {
+        allRoutePointsDescriptions[response.data.pointOnRouteId].routePointDescription =
+          pointDescriptionTextLocal;
+        return response.data;
+      })
+      .catch((err) => console.log("err", err));
+  };
+
   const saveNewRecommendationText = (event) => {
     console.log("newRecommendationTextURL", newRecommendationTextURL);
     if (newRecommendationTextURL != null && newRecommendationTextURL != "") {
@@ -463,13 +393,12 @@ export default function PrivateRoutePreview(textas) {
       } else {
         axios
           .post(
-            "http://localhost:5113/api/troutesprivate/" +
+            "http://localhost:5113/api/troutes/" +
               location.state.message.routeId +
               "/recommendationurl",
             {
               rRecommendationUrlLink: newRecommendationTextURL,
             }
-            // { headers }
           )
           .then((response) => {
             const item = response.data; // Assuming the response data is an array with one item
@@ -492,12 +421,15 @@ export default function PrivateRoutePreview(textas) {
   function handleNewRecommendationText(event) {
     setNewRecommendationTextURL(event.target.value);
   }
+  function handleRoutePointDescriptionChange(event) {
+    setNewRoutePointTextChanges(event.target.value);
+    console.log(event.target);
+  }
 
   function handleAdditionalMarkerDescription() {
     const val = document.getElementById("add-m-d").value;
     console.log(additionalMarkerDescription.id, "val", val);
     setAdditionalMarkerDescription({ id: additionalMarkerDescription.id, desc: val });
-    // allAdditionalMarkersOnEdit[additionalMarkerDescription.id] == val;
     if (
       allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable][additionalMarkerDescription.id]
         .desc != undefined
@@ -511,15 +443,13 @@ export default function PrivateRoutePreview(textas) {
   const targetExtraPointOnMap = (item, id) => (event) => {
     console.log("7777777777777777", item);
     const centerPoint = {
-      // desc: additionalMarkerDescription,
       lat: item.lat,
       lng: item.lng,
     };
     setAdditionalMarkerDescription({ id: id, desc: item.desc });
-    // console.log("item.desc", item.desc, "-id:", id);
     setCenterByPoint(centerPoint);
     setZoomByPoint(9);
-    // console.log("item", item);
+
     if (item.desc == null && document.getElementById("add-m-d")) {
       console.log("item.desc", item.desc);
       document.getElementById("add-m-d").value = "";
@@ -574,7 +504,7 @@ export default function PrivateRoutePreview(textas) {
     console.log("id", id);
     axios
       .delete(
-        "http://localhost:5113/api/troutesprivate/" +
+        "http://localhost:5113/api/troutes/" +
           location.state.message.routeId +
           "/recommendationurl/" +
           recommendation_id_db
@@ -632,9 +562,12 @@ export default function PrivateRoutePreview(textas) {
     console.log("allRoutePointsDescriptions-----", allRoutePointsDescriptions);
     console.log("++++++++allRecommendationsUrlsForRoute-----", allRecommendationsUrlsForRoute);
     axios
-      .put("http://localhost:5113/api/troutesprivate/" + location.state.message.routeId, {
+      .put("http://localhost:5113/api/troutes/" + location.state.message.routeId, {
         rOrigin: data.rOrigin,
         rDestination: data.rDestination,
+        rTripCost: 50,
+        rRating: 4.5,
+        rIsPublished: true,
         rCountry: "LT", //data.rCountry,
         rImagesUrl: allImagesUrlsForRoute,
         rRecommendationUrl: allRecommendationsUrlsForRoute,
@@ -656,7 +589,9 @@ export default function PrivateRoutePreview(textas) {
     // console.log("allRecommendationsUrlsForRoute", allRecommendationsUrlsForRoute);
     console.log("location.state.message", location.state.message.routeId);
   }
-
+  function handleSlideClick(index) {
+    console.log(`Clicked on slide ${index}`);
+  }
   //-----
   const location = useLocation();
   if (!isLoaded) {
@@ -707,7 +642,7 @@ export default function PrivateRoutePreview(textas) {
                   <>
                     <button onClick={changeTextAreaValueByPoint(item)}>
                       {/* {item.pointOnRouteId + 1} */}
-                      {item.pointId}
+                      {item.pointId + 11}
                     </button>
                     {indexas === 4 ? <br /> : null}
                   </>
@@ -718,7 +653,16 @@ export default function PrivateRoutePreview(textas) {
           {allRoutePointsDescriptions.length <= 5 && (
             <div className="private-container-main-left buttons">
               {allRoutePointsDescriptions.map((item) => (
-                <button onClick={changeTextAreaValueByPoint(item)}>{item.pointId}</button>
+                <button
+                  onClick={changeTextAreaValueByPoint(item)}
+                  title={
+                    allMapPlaces[item.pointOnRouteId]?.point_Name
+                      ? allMapPlaces[item.pointOnRouteId].point_Name
+                      : ""
+                  }
+                >
+                  {item.pointId}
+                </button>
               ))}
             </div>
           )}
@@ -728,10 +672,16 @@ export default function PrivateRoutePreview(textas) {
             rows="4"
             cols="20"
             placeholder="There is no content!"
-            value={pointDescriptionValue}
+            value={newRoutePointTextChanges} //{pointDescriptionValue} //{}
+            onChange={handleRoutePointDescriptionChange}
             // defaultValue={""}
             // readOnly
           />
+          <div className="preview-page-save-button">
+            <button className="preview-page-save-button" onClick={saveDescriptionTextToDB}>
+              Save description
+            </button>
+          </div>
           <div
             style={{
               position: "absolute",
@@ -744,18 +694,36 @@ export default function PrivateRoutePreview(textas) {
             {/* TODO */}
             <h3>Recommendations</h3>
             {allRecommendationsUrlsForRoute && (
-              <div style={{ display: "block" }}>
+              <div
+                style={{
+                  display: "block",
+                  maxHeight: allRecommendationsUrlsForRoute.length > 4 ? "120px" : "none",
+                  overflowY: allRecommendationsUrlsForRoute.length > 4 ? "scroll" : "none",
+                  margin: allRecommendationsUrlsForRoute.length > 4 ? "0px auto" : "0px auto",
+                }}
+              >
                 {allRecommendationsUrlsForRoute.map((recommendation, i) => (
                   <div
                     style={{
                       display: "flex",
-                      width: "80%",
-                      margin: "auto",
-                      justifyContent: "space-around",
+                      width: "70%",
+                      margin: "0px auto",
+                      justifyContent: "space-between",
                     }}
                     key={i}
                   >
-                    <p style={{ margin: "0px 0px 4px" }} alt={`Recommendation ${i}`}>
+                    <p
+                      style={{
+                        margin: "0px 0px 4px",
+                        maxWidth:
+                          recommendation.rRecommendationUrlLink.length > 30 ? "250px" : "none",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                      title={recommendation.rRecommendationUrlLink}
+                      alt={`Recommendation ${i}`}
+                    >
                       {recommendation.rRecommendationUrlLink}
                     </p>
                     <p className="recommendation-delete">
@@ -773,19 +741,19 @@ export default function PrivateRoutePreview(textas) {
                     </p>
                   </div>
                 ))}
-                <input
-                  style={{ width: "250px", textAlign: "center" }}
-                  type="text"
-                  placeholder="Enter recommendation URL"
-                  onChange={handleNewRecommendationText}
-                ></input>
-                <CiSaveDown1
-                  size={30}
-                  className="styled-CiSaveDown1"
-                  onClick={saveNewRecommendationText}
-                />
               </div>
             )}
+            <input
+              style={{ width: "250px", textAlign: "center" }}
+              type="text"
+              placeholder="Enter recommendation URL"
+              onChange={handleNewRecommendationText}
+            ></input>
+            <CiSaveDown1
+              size={30}
+              className="styled-CiSaveDown1"
+              onClick={saveNewRecommendationText}
+            />
             <p>{location.state.message.rRecommendationUrl}</p>
           </div>
         </div>
@@ -909,10 +877,14 @@ export default function PrivateRoutePreview(textas) {
           <Slider {...settings}>
             {allImagesUrlsForRoute.map((image, i) => (
               <div key={i}>
-                {/* {console.log("i++++++++++", i)}
-                {console.log("image_url++++++++++", image.image_url)} */}
+                {/* currentIndex */}
                 <img
-                  style={{ display: "block", margin: "auto" }}
+                  style={{
+                    display: "block",
+                    margin: "auto",
+                    maxWidth: "100%",
+                    height: "auto",
+                  }}
                   src={image.rImagesUrlLink}
                   alt={`Slide ${i}`}
                 />

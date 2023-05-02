@@ -14,7 +14,7 @@
   grid-area: footer;
 }
 
-.grid-container {
+.grid-container-gallery {
   display: grid;
   width: 100%;
   grid-template-areas:
@@ -22,24 +22,12 @@
     "main main main "
     "main main main ";
   gap: 10px;
-  background-color: rgba(75, 165, 187, 0.2);
+  /* background-color: rgba(187, 129, 75, 0.9); */
   border-radius: 5px;
   padding: 10px;
 }
 
-/* .grid-container {
-  display: grid;
-  width: 100%;
-  grid-template-areas:
-    "header header header header header header"
-    "menu main main main right right"
-    "menu footer footer footer footer footer";
-  gap: 10px;
-  background-color: rgba(75, 165, 187, 0.2);
-  border-radius: 5px;
-  padding: 10px;
-} */
-.grid-container > div {
+.grid-container-gallery > div {
   display: flex;
   background-color: rgba(255, 255, 255, 0.8);
   text-align: center;
@@ -48,22 +36,21 @@
   justify-content: center;
   align-items: center;
 }
-.grid-container > div:hover {
-  background-color: rgba(75, 165, 187, 0.2);
+.grid-container-gallery > div:hover {
+  background-color: rgba(67, 145, 32, 0.2);
   text-align: center;
   padding: 20px 0;
   font-size: 30px;
 }
-.grid-container > div > img {
+.grid-container-gallery > div > img {
   border-radius: 7px;
 }
-.grid-container > div:hover > img {
+.grid-container-gallery > div:hover > img {
   border-radius: 7px;
-
-  transform: scale(1.2);
 }
-.grid-container > div:hover {
+.grid-container-gallery > div:hover {
   border-radius: 7px;
 
-  transform: scale(1.1);
+  transform: scaleX(1.05);
+  transform: scaleY(1.05);
 }

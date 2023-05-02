@@ -234,6 +234,8 @@
   opacity: 100%;
 }
 .recommendation-delete {
+  display: block;
+  margin: 0px 0px 4px;
   right: 5px;
   font-size: 20px;
   color: #0e5f26;
@@ -242,4 +244,32 @@
 .recommendation-delete:hover {
   right: 5px;
   color: #7a0e0e;
+}
+
+.preview-page-save-button {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+.preview-page-save-button button {
+  margin: 15px;
+  width: 150px;
+  font-weight: bold;
+  position: sticky;
+  color: #000000;
+  display: block;
+  border: 2px solid rgb(255, 238, 202);
+  background-color: rgb(255, 238, 202);
+  border-radius: 15px;
+}
+.preview-page-save-button button:hover {
+  margin: 15px;
+  width: 150px;
+  font-weight: bold;
+  position: sticky;
+  color: #117e73;
+  display: block;
+  border: 1px solid #17c3b2;
+  background-color: rgb(255, 238, 202);
+  border-radius: 15px;
 }
