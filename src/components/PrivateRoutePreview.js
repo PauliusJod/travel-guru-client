@@ -14,9 +14,11 @@ import {
 
 import { Button, ButtonGroup, IconButton, SkeletonText, Textarea } from "@chakra-ui/react";
 
-import { RiDeleteBackFill } from "react-icons/ri";
+import { RiDeleteBackFill, RiRestaurantLine } from "react-icons/ri";
 import { CiSaveDown1 } from "react-icons/ci";
-import { MdDataSaverOn } from "react-icons/md";
+import { MdDataSaverOn, MdOutlineMuseum, MdLocalGasStation } from "react-icons/md";
+import { HiOutlineArrowCircleUp, HiOutlineLockOpen, HiOutlineLockClosed } from "react-icons/hi";
+import { TbHandClick } from "react-icons/tb";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -69,6 +71,8 @@ export default function PrivateRoutePreview(textas) {
   const [allAdditionalMarkersForDB, setAllAdditionalMarkersForDB] = useState([]); // DB
   //
   //
+  const [allPossibleLocationsForAdditionalPoint, setAllPossibleLocationsForAdditionalPoint] =
+    useState([]);
   //
   const [choosenRouteMarkForAdditionalTable, setChoosenRouteMarkForAdditionalTable] =
     useState(null);
@@ -133,20 +137,29 @@ export default function PrivateRoutePreview(textas) {
   }, [additionalPointsFromDB, allRoutePointsDescriptions]);
 
   async function GetPointsDescFromDatabase() {
-    console.log("setAllRouteMidWaypoints", allRouteMidWaypoints);
     axios
-      .get("http://localhost:5113/api/troutes/" + location.state.message.routeId + "/routepoints")
+      .get(
+        "http://localhost:5113/api/troutes/" +
+          location.state.message.routeId +
+          "/routepointsadditional"
+      )
       .then((resp) => {
-        // console.log("resp.data", resp.data);
+        console.log(resp.data);
         const pointsDescFromDB = [];
         resp.data.map((item) => {
           if (item.current === null) {
             return item;
           } else {
+            console.log(item.AddinionalPointMarks);
+            // let additionalPoints = [];
+            // additionalPoints = [...item.AddinionalPointMarks];
+            let additionalPoints =
+              item.addinionalPointMarks !== undefined ? [...item.addinionalPointMarks] : [];
             pointsDescFromDB.push({
               pointId: item.pointId,
               pointOnRouteId: item.pointOnRouteId,
               routePointDescription: item.routePointDescription,
+              additionalPoints: additionalPoints,
             });
             return item;
           }
@@ -156,6 +169,30 @@ export default function PrivateRoutePreview(textas) {
         setIsPageContentLoaded(true);
       });
   }
+  // async function GetPointsDescFromDatabase() {
+  //   console.log("setAllRouteMidWaypoints", allRouteMidWaypoints);
+  //   axios
+  //     .get("http://localhost:5113/api/troutes/" + location.state.message.routeId + "/routepoints")
+  //     .then((resp) => {
+  //       // console.log("resp.data", resp.data);
+  //       const pointsDescFromDB = [];
+  //       resp.data.map((item) => {
+  //         if (item.current === null) {
+  //           return item;
+  //         } else {
+  //           pointsDescFromDB.push({
+  //             pointId: item.pointId,
+  //             pointOnRouteId: item.pointOnRouteId,
+  //             routePointDescription: item.routePointDescription,
+  //           });
+  //           return item;
+  //         }
+  //       });
+  //       console.log("GetPointsDescFromDatabase: ", pointsDescFromDB);
+  //       setAllRoutePointsDescriptions(pointsDescFromDB);
+  //       setIsPageContentLoaded(true);
+  //     });
+  // }
   async function GetImagesUrlsFromDatabase() {
     axios
       .get("http://localhost:5113/api/troutes/" + location.state.message.routeId + "/imageurl")
@@ -222,13 +259,21 @@ export default function PrivateRoutePreview(textas) {
       })
       .catch((err) => console.log("err", err));
   }
+  function showList() {
+    var div = document.querySelector(".additional-table-list-container");
+    div.style.display = "block";
+  }
+  function hideList() {
+    var div = document.querySelector(".additional-table-list-container");
+    div.style.display = "none";
+  }
   const testasaa = () => {
     for (let i = 0; i < allRoutePointsDescriptions.length; i++) {
       const oneRoutePointAllMarkers = [];
       for (let j = 0; j < additionalPointsFromDB.length; j++) {
         const element2 = additionalPointsFromDB[j];
 
-        if (allRoutePointsDescriptions[i].pointId == element2.pointId) {
+        if (allRoutePointsDescriptions[i].pointId === element2.pointId) {
           oneRoutePointAllMarkers.push({
             pointId: element2.pointId,
             desc: element2.desc,
@@ -352,7 +397,7 @@ export default function PrivateRoutePreview(textas) {
     });
   };
   const handleSaveNewExtraCoords = (event) => {
-    if (additionalMarkersOnEdit.length == 5 || additionalMarkersOnEdit.length > 5) {
+    if (additionalMarkersOnEdit.length === 5 || additionalMarkersOnEdit.length > 5) {
     } else if (additionalMarkersOnEdit.length < 5) {
       setAdditionalMarkersOnEdit((prevPositions) => [
         ...prevPositions,
@@ -387,7 +432,7 @@ export default function PrivateRoutePreview(textas) {
 
   const saveNewRecommendationText = (event) => {
     console.log("newRecommendationTextURL", newRecommendationTextURL);
-    if (newRecommendationTextURL != null && newRecommendationTextURL != "") {
+    if (newRecommendationTextURL != null && newRecommendationTextURL !== "") {
       if (newRecommendationTextURL.length < 10) {
         console.log("Please insert https link");
       } else {
@@ -429,14 +474,27 @@ export default function PrivateRoutePreview(textas) {
   function handleAdditionalMarkerDescription() {
     const val = document.getElementById("add-m-d").value;
     console.log(additionalMarkerDescription.id, "val", val);
+    console.log(
+      "allRoutePointsDescriptions",
+      allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable].additionalPoints[
+        additionalMarkerDescription.id
+      ],
+      "val",
+      val
+    );
     setAdditionalMarkerDescription({ id: additionalMarkerDescription.id, desc: val });
     if (
-      allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable][additionalMarkerDescription.id]
-        .desc != undefined
-    ) {
-      allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable][
+      allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable].additionalPoints[
         additionalMarkerDescription.id
-      ].desc = val;
+      ].additionalPointInformation !== undefined
+    ) {
+      allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable].additionalPoints[
+        additionalMarkerDescription.id
+      ].additionalPointInformation = val;
+
+      // allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable][
+      //   additionalMarkerDescription.id
+      // ].desc = val;
     }
     console.log("//////////////////", allAdditionalMarkersOnEdit);
   }
@@ -467,7 +525,7 @@ export default function PrivateRoutePreview(textas) {
         const updatedArray = [...prevArray];
         updatedArray[index] = additionalMarkersOnEditextra;
         return updatedArray;
-      } else if (allAdditionalMarkersOnEdit[index] == undefined) {
+      } else if (allAdditionalMarkersOnEdit[index] === undefined) {
         setToggleAdditionalButton(false);
         const updatedArray = [...prevArray];
         updatedArray[index] = additionalMarkersOnEditextra;
@@ -479,6 +537,8 @@ export default function PrivateRoutePreview(textas) {
     console.log("setAllAdditionalMarkersOnEdit: ", allAdditionalMarkersOnEdit);
     setAdditionalMarkersOnEdit([]);
   };
+
+  // TODO SAVE AFTER CLICKS ON MAP
   const saveAdditionalMarkers = () => {
     console.log("AllAdditionalMarkersOnEdit", allAdditionalMarkersOnEdit);
     setAllAdditionalMarkersOnEdit((prevArray) => {
@@ -487,7 +547,7 @@ export default function PrivateRoutePreview(textas) {
         const updatedArray = [...prevArray];
         updatedArray[choosenRouteMarkForAdditionalTable] = additionalMarkersOnEdit;
         return updatedArray;
-      } else if (allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] == undefined) {
+      } else if (allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] === undefined) {
         setToggleAdditionalButton(false);
         const updatedArray = [...prevArray];
         updatedArray[choosenRouteMarkForAdditionalTable] = additionalMarkersOnEdit;
@@ -589,9 +649,54 @@ export default function PrivateRoutePreview(textas) {
     // console.log("allRecommendationsUrlsForRoute", allRecommendationsUrlsForRoute);
     console.log("location.state.message", location.state.message.routeId);
   }
-  function handleSlideClick(index) {
-    console.log(`Clicked on slide ${index}`);
+  // div[id=`options-${id}`]
+  // const container = document.querySelector(
+  //   ".additional-table-list-container-content-element-options"
+  // );
+  // const matches = container.querySelectorAll("div[data-active='']");
+
+  function showPopUpElement(id) {
+    var option = document.querySelector("#options-" + id);
+    option.style.display = "block";
+    var element = document.querySelector("#element-" + id);
+    element.style.borderStyle = "solid solid none solid";
+    element.style.borderRadius = "0px";
   }
+  function hidePopUpElement(id) {
+    var option = document.querySelector("#options-" + id);
+    option.style.display = "none";
+    var element = document.querySelector("#element-" + id);
+    element.style.borderStyle = "solid solid solid solid";
+    element.style.borderRadius = "5px";
+  }
+  const targetPointInPopUp = (item, id) => {
+    console.log("targetPointInPopUp item: ", item);
+    console.log("targetPointInPopUp id: ", id);
+  };
+
+  function searchNearbyRestaurants(pointLocation) {
+    console.log("searchNearbyRestaurants---");
+    const placesService = new window.google.maps.places.PlacesService(map);
+    placesService.nearbySearch(
+      {
+        location: pointLocation,
+        radius: 1000,
+        type: "restaurant",
+      },
+      (results, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+          // Add the new results to the 'places' array
+          // setPlaces([...places, ...results]);
+          console.log("Results for pointLocation:", pointLocation, "-------", results);
+          // results.map((item, i) => {
+          //   console.log(item);
+          // });
+          setAllPossibleLocationsForAdditionalPoint(results);
+        }
+      }
+    );
+  }
+
   //-----
   const location = useLocation();
   if (!isLoaded) {
@@ -623,6 +728,155 @@ export default function PrivateRoutePreview(textas) {
       >
         {location.state.message.rName}
       </h1>
+      <div id="additional-table-list-container-1" className="additional-table-list-container">
+        <div className="additional-table-list-container-content">
+          {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable] &&
+            allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable].additionalPoints.map(
+              (itemA, i) => (
+                <div style={{ paddingBottom: "5px" }}>
+                  <div
+                    id={`element-${itemA.additionalPointIdInList}`}
+                    className="additional-table-list-container-content-element"
+                    onClick={() => showPopUpElement(itemA.additionalPointIdInList)}
+                  >
+                    {/* {console.log("yyyyyy", itemA)} */}
+                    <p style={{ paddingLeft: "10px", paddingTop: "10px" }}>
+                      Mark near point - {itemA.additionalPointIdInList}
+                    </p>
+                    <button
+                      style={{ justifyContent: "end" }}
+                      onClick={() => targetPointInPopUp(itemA, i)}
+                      key={i}
+                    >
+                      {i}
+                    </button>
+                    <button
+                      style={{ display: "block", margin: "10px 10px" }}
+                      onClick={() =>
+                        //NEARBY MUSEUM
+                        searchNearbyRestaurants({
+                          lat: itemA.additionalPointCoordX,
+                          lng: itemA.additionalPointCoordY,
+                        })
+                      }
+                    >
+                      <MdOutlineMuseum size={25} style={{ color: "darkred" }} />
+                    </button>
+                    <button
+                      style={{ display: "block", margin: "10px 10px" }}
+                      onClick={() =>
+                        //NEARBY GAS STATION
+                        searchNearbyRestaurants({
+                          lat: itemA.additionalPointCoordX,
+                          lng: itemA.additionalPointCoordY,
+                        })
+                      }
+                    >
+                      <MdLocalGasStation size={25} style={{ color: "darkred" }} />
+                    </button>
+                    <button
+                      style={{ display: "block", margin: "10px 10px" }}
+                      onClick={() =>
+                        searchNearbyRestaurants({
+                          lat: itemA.additionalPointCoordX,
+                          lng: itemA.additionalPointCoordY,
+                        })
+                      }
+                    >
+                      <RiRestaurantLine size={25} style={{ color: "darkred" }} />
+                    </button>
+                  </div>
+                  {/* OPENED */}
+                  <div
+                    id={`options-${itemA.additionalPointIdInList}`}
+                    // style={{ display: "flex", justifyContent: "center", overflow: "auto" }}
+                    className="additional-table-list-container-content-element-options"
+                    onClick={() => hidePopUpElement(itemA.additionalPointIdInList)}
+                  >
+                    <div style={{ height: "85%", overflow: "auto" }}>
+                      {allPossibleLocationsForAdditionalPoint &&
+                        allPossibleLocationsForAdditionalPoint.map((itemR, i) => (
+                          <>
+                            <div
+                              id={i}
+                              className="single-options"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              {console.log(itemR)}
+                              <p
+                                style={{
+                                  display: "flex",
+                                  width: "35%",
+                                  justifyContent: "center",
+                                  margin: "auto",
+                                }}
+                              >
+                                "{itemR.name}"
+                              </p>
+                              <p
+                                style={{
+                                  display: "flex",
+                                  width: "15%",
+                                  margin: "auto",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                {itemR.opening_hours.open_now ? (
+                                  <HiOutlineLockOpen size={20} style={{ color: "darkgreen" }} />
+                                ) : (
+                                  <HiOutlineLockClosed size={20} style={{ color: "darkred" }} />
+                                )}
+                              </p>
+                              <p
+                                style={{
+                                  display: "flex",
+                                  width: "25%",
+                                  justifyContent: "center",
+                                  margin: "auto",
+                                }}
+                              >
+                                {itemR.geometry.location.lat()}
+                              </p>
+                              <p
+                                style={{
+                                  display: "flex",
+                                  width: "25%",
+                                  justifyContent: "center",
+                                  margin: "auto",
+                                }}
+                              >
+                                {itemR.geometry.location.lng()}
+                              </p>
+                            </div>
+                          </>
+                        ))}
+                    </div>
+                    <div
+                      style={{
+                        backgroundColor: "rgb(255, 250, 226)",
+                        width: "100%",
+                        height: "10%",
+                      }}
+                    >
+                      <HiOutlineArrowCircleUp
+                        size={30}
+                        style={{ display: "flex", margin: "auto", color: "darkred" }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )
+            )}
+        </div>
+
+        <div className="additional-table-list-container-bottom">
+          <button id="hide-button" onClick={hideList}>
+            Hide
+          </button>
+        </div>
+      </div>
       <div className="publish-button">
         {/* TODO */}
         {/* <button onClick={updateRouteToDB}>Save markers DB</button> */}
@@ -775,10 +1029,17 @@ export default function PrivateRoutePreview(textas) {
               {markerPosition && <Marker position={markerPosition} />}
               {/* {console.log("markerPosition", markerPosition)} */}
               {console.log(allAdditionalMarkersOnEdit)}
-              {allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] &&
-                allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable].map((item) => (
-                  <Marker position={{ lat: item.lat, lng: item.lng }} />
-                ))}
+              {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable] &&
+                allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable].additionalPoints.map(
+                  (item) => (
+                    <Marker
+                      position={{
+                        lat: item.additionalPointCoordX,
+                        lng: item.additionalPointCoordY,
+                      }}
+                    />
+                  )
+                )}
               {/* {additionalMarkersOnEdit &&
                 additionalMarkersOnEdit.map((item) => (
                   <Marker position={{ lat: item.lat, lng: item.lng }} />
@@ -827,12 +1088,19 @@ export default function PrivateRoutePreview(textas) {
                 allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable]
               )} */}
               {/* TODO1 */}
-              {allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] &&
-                allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable].map((itemA, i) => (
-                  <button id="aaaaa" onClick={targetExtraPointOnMap(itemA, i)} key={i}>
-                    {i}
-                  </button>
-                ))}
+
+              {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable] &&
+                allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable].additionalPoints.map(
+                  (itemA, i) => (
+                    <button id="aaaaa" onClick={targetExtraPointOnMap(itemA, i)} key={i}>
+                      {i}
+                    </button>
+                  )
+                )}
+              {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable] && (
+                <button onClick={showList}>Show List</button>
+              )}
+              {/* TODO1 */}
             </div>
             {additionalMarkerDescription && (
               <div>
@@ -841,17 +1109,9 @@ export default function PrivateRoutePreview(textas) {
                   rows="4"
                   cols="50"
                   placeholder="There is no content!"
-                  // defaultValue={
-                  //   (additionalMarkerDescription.id &&
-                  //     allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable][
-                  //       additionalMarkerDescription.id
-                  //     ].desc != undefined) ||
-                  //   ""
-                  // }
                   defaultValue={""}
                   onChange={handleAdditionalMarkerDescription}
                 ></textarea>
-                {/* <button onClick={handleAdditionalMarkerDescription}>Save</button> */}
               </div>
             )}
             {additionalMarkersOnEdit &&

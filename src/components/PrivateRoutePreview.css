@@ -66,7 +66,8 @@
 }
 
 .private-container-main-left .buttons {
-  display: flex;
+  display: block;
+  text-align: center;
   /* background-color: rgba(124, 3, 3, 0.3); */
   align-items: center;
   justify-content: center;
@@ -272,4 +273,98 @@
   border: 1px solid #17c3b2;
   background-color: rgb(255, 238, 202);
   border-radius: 15px;
+}
+
+.additional-table-list-container {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgb(255, 250, 226);
+  width: 50%;
+  border: 1px solid black;
+  border-radius: 30px;
+  height: 500px;
+  z-index: 8;
+
+  animation: fadeIn 1s forwards;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* additional-table-list-container-content
+  additional-table-list-container-bottom */
+.additional-table-list-container-content {
+  display: block;
+  justify-content: center;
+  padding: 3%;
+  width: 100%;
+  height: 80%;
+  flex-wrap: wrap;
+  word-break: break-word;
+  overflow: auto;
+}
+
+/* laikinas */
+.additional-table-list-container-content button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid black;
+  border-radius: 999px;
+  background-color: antiquewhite;
+}
+
+.additional-table-list-container-bottom {
+  display: flex;
+  justify-content: center;
+  top: 85%;
+  height: 20%;
+}
+
+.additional-table-list-container-bottom button {
+  background-color: blanchedalmond;
+  margin: auto;
+  height: 50%;
+  border: 1px solid black;
+  border-radius: 10px;
+}
+.additional-table-list-container-content-element {
+  display: flex;
+  height: 70px;
+  justify-content: space-around;
+  border: 2px solid green;
+  border-radius: 5px;
+  border-style: solid solid solid solid;
+  /* border-style: solid solid none solid; */
+}
+.additional-table-list-container-content-element-options {
+  display: none;
+  justify-content: center;
+
+  background-color: rgb(255, 250, 226);
+  width: 100%;
+  border: 2px solid green;
+
+  border-style: none solid solid solid;
+  height: 200px;
+  animation: fadeIn 1s forwards;
+  cursor: pointer;
+}
+.single-options {
+  display: flex;
+  justify-content: space-around;
+  background-color: white;
+  overflow: hidden;
+  height: 50px;
+  border: 1px solid black;
+}
+.single-options:hover {
+  background-color: rgb(255, 246, 220);
 }
