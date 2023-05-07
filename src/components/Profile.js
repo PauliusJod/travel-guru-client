@@ -14,7 +14,8 @@ export default function Profile() {
   const [allUserCreatedRoutes, setAllUserCreatedRoutes] = useState([]);
   const [enablePasswordChange, setEnablePasswordChange] = useState(false);
   const [enableEmailChange, setEnableEmailChange] = useState(false);
-  const [passwordCurrentInputValue, setPasswordCurrentInputValue] = useState(false);
+  const [passwordCurrentInputValue, setPasswordCurrentInputValue] =
+    useState(false);
   const [passwordNewInputValue, setPasswordNewInputValue] = useState(false);
   const [newEmailInputValue, setNewEmailInputValue] = useState(false);
   const [userName, setUserName] = useState(null);
@@ -23,12 +24,16 @@ export default function Profile() {
     const user = JSON.parse(localStorage.getItem("user"));
     const userInfo = jwt_decode(user.accessToken);
 
-    setUserName(userInfo["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]);
+    setUserName(
+      userInfo["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]
+    );
     async function GetRoutesFromDatabase() {
-      axios.get("http://localhost:5113/api/troutes/usercreated/" + userInfo.sub).then((resp) => {
-        //store data loaded
-        setAllUserCreatedRoutes(resp.data);
-      });
+      axios
+        .get("http://localhost:5113/api/troutes/usercreated/" + userInfo.sub)
+        .then((resp) => {
+          //store data loaded
+          setAllUserCreatedRoutes(resp.data);
+        });
     }
     GetRoutesFromDatabase();
   }, []);
@@ -54,7 +59,6 @@ export default function Profile() {
     } else {
       setEnablePasswordChange(true);
     }
-    // console.log("handleChangePassword");
   };
   const toggleEmailChangeOption = () => {
     if (enableEmailChange) {
@@ -62,7 +66,6 @@ export default function Profile() {
     } else {
       setEnableEmailChange(true);
     }
-    // console.log("handleChangeEmail");
   };
   // INPUT CHANGE HANDLERS------------------------------------------
   function handlePasswordCurrentInputChange(event) {
@@ -124,21 +127,38 @@ export default function Profile() {
               {allUserCreatedRoutes.map((oneUserCreatedRoute) => (
                 <div key={oneUserCreatedRoute.routeId}>
                   {console.log(oneUserCreatedRoute)}
-                  <div
-                    key={oneUserCreatedRoute.routeId}
-                    className="item3"
-                    id={oneUserCreatedRoute.routeId}
-                    alt={oneUserCreatedRoute.routeId}
-                  >
-                    <img
-                      key={oneUserCreatedRoute.routeId}
-                      src={myImage2}
-                      alt={oneUserCreatedRoute.routeId}
-                      width="200"
-                      height="200"
-                      onClick={() => handleClick(oneUserCreatedRoute)}
-                    ></img>
-                  </div>
+                  {oneUserCreatedRoute.rImagesUrl != null &&
+                  oneUserCreatedRoute.rImagesUrl != undefined ? (
+                    <>
+                      <img
+                        key={oneUserCreatedRoute.routeId}
+                        src={oneUserCreatedRoute.rImagesUrl[0].rImagesUrlLink}
+                        alt={oneUserCreatedRoute.routeId}
+                        width="200"
+                        height="200"
+                        style={{ objectFit: "cover" }}
+                        onClick={() => handleClick(oneUserCreatedRoute)}
+                      ></img>
+                      <p style={{ fontSize: "24px", margin: "5px" }}>
+                        {oneUserCreatedRoute.rName}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <img
+                        key={oneUserCreatedRoute.routeId}
+                        src={myImage2}
+                        alt={oneUserCreatedRoute.routeId}
+                        width="200"
+                        height="200"
+                        style={{ objectFit: "cover" }}
+                        onClick={() => handleClick(oneUserCreatedRoute)}
+                      ></img>
+                      <p style={{ fontSize: "24px", margin: "5px" }}>
+                        {oneUserCreatedRoute.rName}
+                      </p>
+                    </>
+                  )}
                 </div>
               ))}
             </div>

@@ -59,7 +59,7 @@ class Login extends Component {
     if (this.checkBtn.context._errors.length === 0) {
       AuthService.login(this.state.username, this.state.password).then(
         () => {
-          this.props.router.navigate("/#");
+          this.props.router.navigate("/profile"); //("/#");
           window.location.reload();
           const a = AuthService.getCurrentUser();
           axios.create({
@@ -71,7 +71,9 @@ class Login extends Component {
         },
         (error) => {
           const resMessage =
-            (error.response && error.response.data && error.response.data.message) ||
+            (error.response &&
+              error.response.data &&
+              error.response.data.message) ||
             error.message ||
             error.toString();
 
@@ -127,7 +129,10 @@ class Login extends Component {
                   </div>
 
                   <div className="form-group">
-                    <button className="btn btn-success btn-block" disabled={this.state.loading}>
+                    <button
+                      className="btn btn-success btn-block"
+                      disabled={this.state.loading}
+                    >
                       {this.state.loading && (
                         <span className="spinner-border spinner-border-sm"></span>
                       )}

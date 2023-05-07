@@ -1,4 +1,12 @@
-﻿import React, { Component } from "react";
+﻿import React, { Component, useRef, useState, createRef } from "react";
+import {
+  useJsApiLoader,
+  GoogleMap,
+  Marker,
+  Autocomplete,
+  DirectionsRenderer,
+  InfoWindow,
+} from "@react-google-maps/api";
 import logo from "./images/pexels-quang-nguyen-vinh-2166711.jpg";
 export class Home extends Component {
   static displayName = Home.name;
@@ -18,6 +26,15 @@ export class Home extends Component {
             </a>
           </div>
         </div>
+        <div
+          style={{
+            margin: "auto",
+            display: "flex",
+            width: "80%",
+            backgroundColor: "rgba(255,255,255,0.3)",
+            // justifyContent: "center",
+          }}
+        ></div>
       </div>
     );
   }

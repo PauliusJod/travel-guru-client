@@ -84,13 +84,6 @@
   font-weight: bold;
   border-radius: 10px;
 }
-/* ;
-;
-;
-;
-;
-;
-; */
 
 .grid-container {
   display: grid;
@@ -125,11 +118,10 @@
 }
 .grid-container > div:hover > img {
   border-radius: 7px;
-
-  transform: scale(1.2);
 }
 .grid-container > div:hover {
   border-radius: 7px;
 
-  transform: scale(1.1);
+  transform: scaleX(1.05);
+  transform: scaleY(1.05);
 }

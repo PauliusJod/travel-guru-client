@@ -79,21 +79,6 @@
   margin-bottom: 10px;
   /* display: inline-flex; */
 }
-/* .private-container-main-left .buttons button {
-    background-color: rgb(255, 255, 255);
-    border: 0;
-    color: green;
-    font-weight: bold;
-    border-radius: 30px;
-    margin: 5px;
-    width: 40px;
-    height: 40px;
-  }
-  .private-container-main-left .buttons button:hover {
-    background-color: rgb(1, 161, 1);
-    color: rgb(255, 255, 255);
-  } */
-
 .private-container-main-left .buttons button {
   padding: 1em 1.5em;
   border: 2px solid #48a5a0;
@@ -367,4 +352,79 @@
 }
 .single-options:hover {
   background-color: rgb(255, 246, 220);
+}
+.simple-button-style {
+  display: flex;
+  margin: 20px;
+}
+.simple-button-style button {
+  padding: 1em 1.5em;
+  border: 2px solid #48a5a0;
+  font-weight: bold;
+  position: relative;
+  overflow: hidden;
+  background-color: transparent;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 16px;
+  transition: 0.1s;
+  z-index: 1;
+  font-family: inherit;
+  color: #0b4b44;
+  border-radius: 30px;
+}
+.simple-button-style button::before {
+  content: "";
+  width: 0;
+  height: 300%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: #17c3b2;
+  transition: 0.5s ease;
+  display: block;
+  z-index: -1;
+}
+.simple-button-style button:hover::before {
+  width: 105%;
+}
+
+.simple-button-style button:hover {
+  color: #111;
+}
+.images-container {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  border: 0px;
+}
+.images-container .left {
+  display: flex;
+  width: 80%;
+  justify-content: end;
+  border: 0px;
+}
+.images-container .right {
+  display: flex;
+  width: 20%;
+  margin: auto;
+  justify-content: start;
+  color: darkgreen;
+  border: 0px;
+}
+.images-container .left input {
+  width: 80%;
+  height: 50px;
+  text-align: center;
+  text-decoration: underline;
+  margin: 10px;
+  outline: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: 1px solid rgba(253, 188, 90, 0.8);
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 100px;
+  box-shadow: inset 2px 2px 5px rgba(253, 188, 90, 0.6);
+  color: #000000;
 }

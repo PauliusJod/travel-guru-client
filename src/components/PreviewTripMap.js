@@ -16,14 +16,18 @@ import { Heading, SkeletonText, calc, flexbox } from "@chakra-ui/react";
 
 import jwt_decode from "jwt-decode";
 import { CgProfile } from "react-icons/cg";
-import { MdExpandLess, MdExpandMore, MdPublishedWithChanges } from "react-icons/md";
+import {
+  MdExpandLess,
+  MdExpandMore,
+  MdPublishedWithChanges,
+} from "react-icons/md";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 export default function PreviewTripMap(textas) {
   const centerPoint = { lat: 54.8985, lng: 23.9036 };
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyClg0_pq0WTqIRVmRI10U2pQPZv7f5dQXQ", // "AIzaSyAiB_hv59Hb5MQol934V0jK-t9CVbc2JGY", //AIzaSyClg0_pq0WTqIRVmRI10U2pQPZv7f5dQXQ //process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey: "AIzaSyAmOOpkKLPbXQ4TnZYJ3xNw868ySAaoylA", //"AIzaSyClg0_pq0WTqIRVmRI10U2pQPZv7f5dQXQ", // "AIzaSyAiB_hv59Hb5MQol934V0jK-t9CVbc2JGY", //AIzaSyClg0_pq0WTqIRVmRI10U2pQPZv7f5dQXQ //process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries: ["geometry", "places"],
   });
   const google = window.google;
@@ -38,24 +42,36 @@ export default function PreviewTripMap(textas) {
   const [directionsRendererKey, setDirectionsRendererKey] = useState(1);
 
   const [allRouteMidWaypoints, setAllRouteMidWaypoints] = useState(null);
-  const [allRouteSectionsDescriptions, setAllRouteSectionsDescriptions] = useState(null);
-  const [allRoutePointsDescriptions, setAllRoutePointsDescriptions] = useState([]);
+  const [allRouteSectionsDescriptions, setAllRouteSectionsDescriptions] =
+    useState(null);
+  const [allRoutePointsDescriptions, setAllRoutePointsDescriptions] = useState(
+    []
+  );
   const [pointDescriptionValue, setPointDescriptionValue] = useState(null);
   const [allMapPlaces, setAllMapPlaces] = useState([]);
 
   //--------------------------
-  const [choosenRouteMarkForAdditionalTable, setChoosenRouteMarkForAdditionalTable] =
-    useState(null);
+  const [
+    choosenRouteMarkForAdditionalTable,
+    setChoosenRouteMarkForAdditionalTable,
+  ] = useState(null);
 
-  const [additionalMarkerDescription, setAdditionalMarkerDescription] = useState("");
+  const [additionalMarkerDescription, setAdditionalMarkerDescription] =
+    useState("");
 
   const [allImagesUrlsForRoute, setAllImagesUrlsForRoute] = useState([]);
-  const [allRecommendationsUrlsForRoute, setAllRecommendationsUrlsForRoute] = useState([]);
+  const [allRecommendationsUrlsForRoute, setAllRecommendationsUrlsForRoute] =
+    useState([]);
   const [allCommentsForRoute, setAllCommentsForRoute] = useState(null);
 
   const [additionalPointsFromDB, setAdditionalPointsFromDB] = useState([]);
   //--------------------------
   const [expanded, setExpanded] = useState(false);
+
+  const [currentAddPointIdInList, setCurrentAddPointIdInList] = useState(0);
+
+  const [currentPointId, setCurrentPointId] = useState(0);
+  const [choosenAdditionalMark, setChoosenAdditionalMark] = useState(null);
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -83,14 +99,18 @@ export default function PreviewTripMap(textas) {
     const user = JSON.parse(localStorage.getItem("user"));
     const userInfo = jwt_decode(user.accessToken);
 
-    setUserName(userInfo["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]);
+    setUserName(
+      userInfo["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]
+    );
 
     console.log("useEffect");
     async function GetMidWaypointsFromDatabase() {
       console.log("aaa");
       axios
         .get(
-          "http://localhost:5113/api/troutes/" + location.state.message.routeId + "/midwaypoints"
+          "http://localhost:5113/api/troutes/" +
+            location.state.message.routeId +
+            "/midwaypoints"
         )
         .then((resp) => {
           const midwaypointsFromDB = [];
@@ -134,7 +154,9 @@ export default function PreviewTripMap(textas) {
             // let additionalPoints = [];
             // additionalPoints = [...item.AddinionalPointMarks];
             let additionalPoints =
-              item.addinionalPointMarks != undefined ? [...item.addinionalPointMarks] : [];
+              item.addinionalPointMarks != undefined
+                ? [...item.addinionalPointMarks]
+                : [];
             pointsDescFromDB.push({
               pointId: item.pointId,
               pointOnRouteId: item.pointOnRouteId,
@@ -152,7 +174,9 @@ export default function PreviewTripMap(textas) {
   async function GetAdditionalPointsFromDatabase() {
     axios
       .get(
-        "http://localhost:5113/api/troutes/" + location.state.message.routeId + "/additionalpoints"
+        "http://localhost:5113/api/troutes/" +
+          location.state.message.routeId +
+          "/additionalpoints"
       )
       .then((resp) => {
         const additionalPointsFromDBTemp = [];
@@ -164,22 +188,33 @@ export default function PreviewTripMap(textas) {
             //pointId: pointIdIsEditing, desc: "", lat: markerPosition.lat, lng: markerPosition.lng
             additionalPointsFromDBTemp.push({
               pointId: item.troutePointDescriptionpointId,
-              desc: item.additionalPointInformation,
-              lat: item.additionalPointCoordX,
-              lng: item.additionalPointCoordY,
+              additionalPointInformation: item.additionalPointInformation,
+              additionalPointCoordX: item.additionalPointCoordX,
+              additionalPointCoordY: item.additionalPointCoordY,
+              additionalPointPlaceName: item.additionalPointPlaceName,
+              additionalPointPlaceId: item.additionalPointPlaceId,
+              additionalPointPlaceRating: item.additionalPointPlaceRating,
+              additionalPointPlaceRefToMaps: item.additionalPointPlaceRefToMaps,
             });
             return item;
           }
         });
         setAdditionalPointsFromDB(additionalPointsFromDBTemp);
-        console.log("GetAdditionalPointsFromDatabase", additionalPointsFromDBTemp);
+        console.log(
+          "GetAdditionalPointsFromDatabase",
+          additionalPointsFromDBTemp
+        );
       })
       .catch((err) => console.log("err", err));
   }
   async function GetImagesUrlsFromDatabase() {
     // console.log("GetImagesUrlsFromDatabase");
     axios
-      .get("http://localhost:5113/api/troutes/" + location.state.message.routeId + "/imageurl")
+      .get(
+        "http://localhost:5113/api/troutes/" +
+          location.state.message.routeId +
+          "/imageurl"
+      )
       .then((resp) => {
         // console.log("-----------------------------------------", resp.data);
         const imagesUrlsFromDB = [];
@@ -201,7 +236,9 @@ export default function PreviewTripMap(textas) {
   async function GetRecommendationsUrlsFromDatabase() {
     axios
       .get(
-        "http://localhost:5113/api/troutes/" + location.state.message.routeId + "/recommendationurl"
+        "http://localhost:5113/api/troutes/" +
+          location.state.message.routeId +
+          "/recommendationurl"
       )
       .then((resp) => {
         console.log("recommendations: ", resp.data);
@@ -224,7 +261,10 @@ export default function PreviewTripMap(textas) {
   }
   async function GetCommentsFromDatabase() {
     axios
-      .get("http://localhost:5113/api/routecomments/" + location.state.message.routeId)
+      .get(
+        "http://localhost:5113/api/routecomments/" +
+          location.state.message.routeId
+      )
       .then((resp) => {
         // console.log("recommendations: ", resp.data);
         const commentsFromDB = [];
@@ -280,17 +320,20 @@ export default function PreviewTripMap(textas) {
 
     for (let i = 0; i < allMapPlaces.length; i++) {
       const promise = new Promise((resolve, reject) => {
-        geocoder.geocode({ placeId: allMapPlaces[i].place_id }, (results, status) => {
-          if (status === "OK") {
-            resolve({
-              point_Place_Id: allMapPlaces[i].place_id,
-              point_Location_X: results[0].geometry.location.lat(),
-              point_Location_Y: results[0].geometry.location.lng(),
-            });
-          } else {
-            reject(new Error("Geocode failed due to: " + status));
+        geocoder.geocode(
+          { placeId: allMapPlaces[i].place_id },
+          (results, status) => {
+            if (status === "OK") {
+              resolve({
+                point_Place_Id: allMapPlaces[i].place_id,
+                point_Location_X: results[0].geometry.location.lat(),
+                point_Location_Y: results[0].geometry.location.lng(),
+              });
+            } else {
+              reject(new Error("Geocode failed due to: " + status));
+            }
           }
-        });
+        );
       });
 
       promises.push(promise);
@@ -348,9 +391,12 @@ export default function PreviewTripMap(textas) {
     // console.log("item", item);
     setCenterByPoint(centerPoint);
     setZoomByPoint(7);
+    setCurrentPointId(item.pointId);
     setPointDescriptionValue(item.routePointDescription);
     setChoosenRouteMarkForAdditionalTable(item.pointOnRouteId);
-    if (!allRoutePointsDescriptions[item.pointOnRouteId].additionalPoints.length) {
+    if (
+      !allRoutePointsDescriptions[item.pointOnRouteId].additionalPoints.length
+    ) {
       document.getElementById("additional-show").style.display = "none";
     } else {
       document.getElementById("additional-show").style.display = "block";
@@ -366,19 +412,29 @@ export default function PreviewTripMap(textas) {
     };
     setCenterByPoint(centerPoint);
     setZoomByPoint(12);
-    if (item.additionalPointInformation == null && document.getElementById("add-m-d")) {
+    setChoosenAdditionalMark(item);
+    setCurrentAddPointIdInList(item.additionalPointIdInList);
+    if (
+      item.additionalPointInformation == null &&
+      document.getElementById("add-m-d")
+    ) {
       document.getElementById("add-m-d").value = "";
     } else if (document.getElementById("add-m-d")) {
-      document.getElementById("add-m-d").value = item.additionalPointInformation;
+      document.getElementById("add-m-d").value =
+        item.additionalPointInformation;
     }
   };
 
   function handleAdditionalMarkerDescription() {
     const val = document.getElementById("add-m-d").value;
-    setAdditionalMarkerDescription({ id: additionalMarkerDescription.id, desc: val });
+    setAdditionalMarkerDescription({
+      id: additionalMarkerDescription.id,
+      desc: val,
+    });
     if (
-      allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable][additionalMarkerDescription.id]
-        .desc != undefined
+      allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable][
+        additionalMarkerDescription.id
+      ].desc != undefined
     ) {
       allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable][
         additionalMarkerDescription.id
@@ -395,7 +451,9 @@ export default function PreviewTripMap(textas) {
     };
     axios
       .post(
-        "http://localhost:5113/api/routecomments/" + location.state.message.routeId + "/newcomment",
+        "http://localhost:5113/api/routecomments/" +
+          location.state.message.routeId +
+          "/newcomment",
         {
           commentText: commentFieldValue,
         },
@@ -404,8 +462,6 @@ export default function PreviewTripMap(textas) {
       // );
       .then((response) => {
         GetCommentsFromDatabase();
-        console.log(allCommentsForRoute);
-
         document.getElementById("c-f").value = "";
       });
   };
@@ -432,25 +488,94 @@ export default function PreviewTripMap(textas) {
           <div className="view-container-main-left buttons">
             {allRoutePointsDescriptions.map((item) => (
               <>
-                {/* {console.log(item)} */}
-                <button onClick={changeTextAreaValueByPoint(item)}>
+                <button
+                  style={{
+                    backgroundColor:
+                      currentPointId === item.pointId ? "#17c3b2" : "",
+                    color: currentPointId === item.pointId ? "#000000" : "",
+                  }}
+                  onClick={changeTextAreaValueByPoint(item)}
+                >
                   {item.pointOnRouteId + 1}
                 </button>
               </>
             ))}
           </div>
           <textarea
-            // rows="4"
-            // cols="30"
             placeholder="There is no content!"
             value={pointDescriptionValue}
           />
+          <div
+            style={{
+              position: "absolute",
+              bottom: "0px",
+              textAlign: "center",
+              width: "100%",
+            }}
+          >
+            <h3>Recommendations</h3>
+            {allRecommendationsUrlsForRoute && (
+              <div
+                style={{
+                  display: "block",
+
+                  border: "1px solid white",
+                  width: "80%",
+                  borderRadius: "10px",
+                  backgroundColor: "rgba(255,255,255,0.4)",
+                  boxShadow: "inset 2px 0px 5px #f5e384",
+                  maxHeight:
+                    allRecommendationsUrlsForRoute.length > 4
+                      ? "120px"
+                      : "none",
+                  overflowY:
+                    allRecommendationsUrlsForRoute.length > 4
+                      ? "scroll"
+                      : "none",
+                  margin:
+                    allRecommendationsUrlsForRoute.length > 4
+                      ? "0px auto"
+                      : "0px auto",
+                }}
+              >
+                {allRecommendationsUrlsForRoute.map((recommendation, i) => (
+                  <div
+                    style={{
+                      display: "flex",
+                      width: "70%",
+                      margin: "0px auto",
+                      justifyContent: "space-between",
+                    }}
+                    key={i}
+                  >
+                    <p
+                      style={{
+                        margin: "0px 0px 4px",
+                        maxWidth:
+                          recommendation.rRecommendationUrlLink.length > 30
+                            ? "250px"
+                            : "none",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                      title={recommendation.rRecommendationUrlLink}
+                      alt={`Recommendation ${i}`}
+                    >
+                      {recommendation.rRecommendationUrlLink}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p></p>
+          </div>
         </div>
         <div className="view-container-main-right">
           {isPageContentLoaded && (
             <GoogleMap
               center={centerByPoint || centerPoint}
-              zoom={zoomByPoint || 9} //zoomByPoint ||
+              zoom={zoomByPoint || 9}
               mapContainerClassName="view-map-container"
               options={{
                 zoomControl: false,
@@ -466,7 +591,6 @@ export default function PreviewTripMap(textas) {
                     item.additionalPoints &&
                     item.additionalPoints.map((point) => (
                       <>
-                        {/* {console.log(point)} */}
                         <Marker
                           key={point.id}
                           position={{
@@ -490,28 +614,109 @@ export default function PreviewTripMap(textas) {
           )}
         </div>
       </div>
-      {/* </div> */}
-      <div id="additional-show" style={{ display: "none" }}>
-        {/* TODO display: none */}
+      <div
+        id="additional-show"
+        className="additional-show"
+        style={{ display: "none" }}
+      >
         <div className="trip-points-section">
           {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable] &&
-            allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable].additionalPoints.map(
-              (point, i) => (
-                <button id="aaaaa" onClick={() => targetExtraPointOnMap(point, i)} key={i}>
-                  {i}
-                </button>
-              )
-            )}
+            allRoutePointsDescriptions[
+              choosenRouteMarkForAdditionalTable
+            ].additionalPoints.map((point, i) => (
+              <button
+                id="aaaaa"
+                style={{
+                  backgroundColor:
+                    currentAddPointIdInList === point.additionalPointIdInList
+                      ? "#17c3b2"
+                      : "",
+                  color:
+                    currentAddPointIdInList === point.additionalPointIdInList
+                      ? "#000000"
+                      : "",
+                }}
+                onClick={() => targetExtraPointOnMap(point, i)}
+                key={i}
+              >
+                {i}
+              </button>
+            ))}
         </div>
-        <div className="trip-points-section text">
-          <textarea
-            id="add-m-d"
-            rows="4"
-            cols="50"
-            placeholder="There is no content!"
-            defaultValue={""}
-            onChange={handleAdditionalMarkerDescription}
-          ></textarea>
+        <div
+          className="add-bottom"
+          style={{
+            display: "flex",
+            width: "50%",
+            margin: "auto",
+            borderRadius: "10px",
+            backgroundColor: "rgba(255,255,255,0.4)",
+            boxShadow: "inset 2px 0px 5px #f5e384",
+            padding: "10px",
+            marginTop: "10px",
+          }}
+        >
+          <div className="trip-points-section-left">
+            {choosenAdditionalMark && (
+              <>
+                {choosenAdditionalMark.additionalPointPlaceName && (
+                  <div
+                    style={{
+                      display: "flex",
+                      textAlign: "end",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <p>Place title</p>
+                    <p>{choosenAdditionalMark.additionalPointPlaceName}</p>
+                  </div>
+                )}
+
+                {choosenAdditionalMark.additionalPointPlaceRating && (
+                  <div
+                    style={{
+                      display: "flex",
+                      textAlign: "end",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <p>Place rating</p>
+                    <p style={{ textAlign: "end" }}>
+                      {choosenAdditionalMark.additionalPointPlaceRating}
+                    </p>
+                  </div>
+                )}
+                {choosenAdditionalMark.additionalPointPlaceRefToMaps && (
+                  <div
+                    style={{
+                      display: "flex",
+                      textAlign: "end",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <p>More information: </p>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          choosenAdditionalMark.additionalPointPlaceRefToMaps,
+                      }}
+                    ></div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          <div className="trip-points-section-right">
+            <textarea
+              id="add-m-d"
+              rows="4"
+              cols="50"
+              placeholder="There is no content!"
+              defaultValue={""}
+              onChange={handleAdditionalMarkerDescription}
+            ></textarea>
+          </div>
         </div>
       </div>
       {allImagesUrlsForRoute && (
@@ -519,8 +724,6 @@ export default function PreviewTripMap(textas) {
           <Slider {...settings}>
             {allImagesUrlsForRoute.map((image, i) => (
               <div key={i}>
-                {/* {console.log("i++++++++++", i)}
-                {console.log("image_url++++++++++", image.image_url)} */}
                 <img
                   className="view-images-container-img"
                   src={image.rImagesUrlLink}
@@ -558,8 +761,23 @@ export default function PreviewTripMap(textas) {
 
                     <p>{item.commentDate}</p>
                   </div>
-                  <div className="comment add-right">
-                    <span placeholder="Write your comment">{item.commentText}</span>
+                  <div
+                    className="comment add-right"
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      height: "90%",
+                      alignItems: "center",
+                      backgroundColor: "rgba(255, 255, 255, 0.6)",
+                      border: "1px solid rgba(253, 188, 90, 0.8)",
+                      borderRadius: "10px",
+                      boxShadow: "inset 2px 2px 5px rgba(255, 255, 255, 1)",
+                      color: "#000000",
+                    }}
+                  >
+                    <span placeholder="Write your comment">
+                      {item.commentText}
+                    </span>
                   </div>
                 </div>
               ))}

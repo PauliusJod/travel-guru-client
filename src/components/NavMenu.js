@@ -1,5 +1,12 @@
 import React, { Component } from "react";
-import { Collapse, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
+import {
+  Collapse,
+  Navbar,
+  NavbarBrand,
+  NavbarToggler,
+  NavItem,
+  NavLink,
+} from "reactstrap";
 import { Link } from "react-router-dom";
 import "./NavMenu.css";
 
@@ -82,11 +89,11 @@ export class NavMenu extends Component {
           {user ? (
             //<NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
             <ul className="navbar-nav flex-grow">
-              <NavItem>
+              {/* <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/">
                   Home
                 </NavLink>
-              </NavItem>
+              </NavItem> */}
               <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/mapsGallery">
                   Maps Gallery
@@ -103,23 +110,28 @@ export class NavMenu extends Component {
                 </NavLink>
               </NavItem>
               <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/" onClick={this.handleLogout}>
+                <NavLink
+                  tag={Link}
+                  className="text-dark"
+                  to="/"
+                  onClick={this.handleLogout}
+                >
                   Logout
                 </NavLink>
               </NavItem>
             </ul>
           ) : (
             <ul className="navbar-nav flex-grow">
-              <NavItem>
+              {/* <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/">
                   Home
                 </NavLink>
-              </NavItem>
-              <NavItem>
+              </NavItem> */}
+              {/* <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/mapsGallery">
                   Maps Gallery
                 </NavLink>
-              </NavItem>
+              </NavItem> */}
               {/* <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/testMap">
                   testMap
@@ -143,8 +155,7 @@ export class NavMenu extends Component {
   }
   handleLogout = () => {
     localStorage.clear();
-    window.location.reload(true);
-    // handle logout logic here
+    window.location = "http://localhost:3000/";
   };
 }
 {

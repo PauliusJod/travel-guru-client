@@ -37,20 +37,40 @@ export default function MapsGallery() {
             id={oneRoute.routeId}
             alt={oneRoute.routeId}
           >
-            <img
-              key={oneRoute.routeId}
-              src={myImage2}
-              alt={oneRoute.routeId}
-              width="200"
-              height="200"
-              onClick={() => handleClick(oneRoute)}
-            ></img>
-            <p style={{ fontSize: "24px", margin: "5px" }}>{oneRoute.rName}</p>
+            {oneRoute.rImagesUrl != null && oneRoute.rImagesUrl != undefined ? (
+              <>
+                <img
+                  key={oneRoute.routeId}
+                  src={oneRoute.rImagesUrl[0].rImagesUrlLink}
+                  alt={oneRoute.routeId}
+                  width="200"
+                  height="200"
+                  style={{ objectFit: "cover" }}
+                  onClick={() => handleClick(oneRoute)}
+                ></img>
+                <p style={{ fontSize: "24px", margin: "5px" }}>
+                  {oneRoute.rName}
+                </p>
+              </>
+            ) : (
+              <>
+                <img
+                  key={oneRoute.routeId}
+                  src={myImage2}
+                  alt={oneRoute.routeId}
+                  width="200"
+                  height="200"
+                  style={{ objectFit: "cover" }}
+                  onClick={() => handleClick(oneRoute)}
+                ></img>
+                <p style={{ fontSize: "24px", margin: "5px" }}>
+                  {oneRoute.rName}
+                </p>
+              </>
+            )}
           </div>
         </div>
       ))}
     </div>
   );
 }
-
-// function GalleryMaps() {}

@@ -1,18 +1,18 @@
-﻿import React, { useRef, /*useEffect,*/ useState, createRef } from "react";
-// import iconGPS from "../destination.png";
+﻿import React, { useRef, useState, createRef } from "react";
 import {
   useJsApiLoader,
   GoogleMap,
   Marker,
   Autocomplete,
-  // DirectionsService,
   DirectionsRenderer,
-  // PlacesService,
-  InfoWindow,
 } from "@react-google-maps/api";
 
-// import { decodePath } from "google.maps.geometry.encoding";
-import { Button, ButtonGroup, IconButton, SkeletonText, Textarea } from "@chakra-ui/react";
+import {
+  Button,
+  ButtonGroup,
+  IconButton,
+  SkeletonText,
+} from "@chakra-ui/react";
 import {
   FaLocationArrow,
   FaTimes,
@@ -23,55 +23,50 @@ import {
   FaWalking,
   FaCarSide,
 } from "react-icons/fa";
-import { RiRestaurantLine, RiGasStationLine } from "react-icons/ri";
-import { GiBinoculars } from "react-icons/gi";
-import { FiDownload } from "react-icons/fi";
-import { func } from "prop-types";
+import { GiCheckMark } from "react-icons/gi";
+import { RiPinDistanceFill } from "react-icons/ri";
+import { TbGps } from "react-icons/tb";
+import { CgTimelapse } from "react-icons/cg";
 import axios from "axios";
 import countries from "./const/countries.json";
 
+import "./MapTest.css";
+
 const CircularJSON = require("circular-json");
-//TODO:
-// kiekvienas routas turi aprasyma bendra ir tasku - kaip blog'as
-// Db-> routai, new route -> db.
-// Print list su id, pav, likes
-//
-// Sukurti user profili ir imones profili, imones profilis gali ikelti savo mark'a ir duoti jam info
-//
-//
-// Paspaudimas ant žemėlapio pasirinkti tašką
-//
-//
-//
+
 export default function TestMap() {
   const centerPoint = { lat: 54.8985, lng: 23.9036 };
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyClg0_pq0WTqIRVmRI10U2pQPZv7f5dQXQ", //"AIzaSyAiB_hv59Hb5MQol934V0jK-t9CVbc2JGY", //process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey: "AIzaSyAmOOpkKLPbXQ4TnZYJ3xNw868ySAaoylA", //"AIzaSyClg0_pq0WTqIRVmRI10U2pQPZv7f5dQXQ", //"AIzaSyAiB_hv59Hb5MQol934V0jK-t9CVbc2JGY", //process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries: ["geometry", "places"],
   });
   const google = window.google;
-  // console.log(isLoaded.libraries);
-  // console.log(libraries);
   const [map, setMap] = React.useState(null);
-  const [directionsRendererInfo, setDirectionsRendererInfo] = React.useState(null);
+  const [directionsRendererInfo, setDirectionsRendererInfo] =
+    React.useState(null);
 
-  const [markersArray, setMarkersArray] = useState([]);
   const [marker, setMarker] = React.useState(null);
   const [infoWindow, setInfoWindow] = React.useState(null);
   const [places, setPlaces] = React.useState([]);
   const [placesState, setPlacesState] = React.useState(false);
   const [directionsResponse, setDirectionsResponse] = useState(null);
-  // const [curretMarkersOnTheMap, setCurretMarkersOnTheMap] = useState(null);
   //-------- Directions, paths, needs..
 
   const [restaurants, setRestaurants] = React.useState([]);
-  const [rerenderStateForDifferentPath, setRerenderStateForDifferentPath] = useState(null);
+  const [rerenderStateForDifferentPath, setRerenderStateForDifferentPath] =
+    useState(null);
 
-  const [rerenderStateForDifferentNeed, setRerenderStateForDifferentNeed] = useState("NONE");
+  const [rerenderStateForDifferentNeed, setRerenderStateForDifferentNeed] =
+    useState("NONE");
   const [routeSelectedCountry, setRouteSelectedCountry] = useState("Unknown");
   const [routeName, setRouteName] = useState("Unnamed");
 
   //--------
+  //Validations handlers------------------------------------------------
+
+  const [routeNameValue, setRouteNameValue] = useState(""); // handleRouteNameInputValue
+
+  //Validations handlers------------------------------------------------
   const [saveSectionInputValues, setSaveSectionInputValues] = useState([""]);
   const [savePointInputValues, setSavePointInputValues] = useState([""]);
 
@@ -85,7 +80,6 @@ export default function TestMap() {
   const [isSectionOpen, setIsSectionOpen] = useState([false]); // old isOpen
   const [isPointOpen, setIsPointOpen] = useState([false]);
   function handleSectionClick(id) {
-    console.log(isSectionOpen);
     setIsSectionOpen((prevState) => {
       const newState = [...prevState];
       newState[id] = !newState[id];
@@ -94,7 +88,6 @@ export default function TestMap() {
   }
   //CHECK - FIX
   function handlePointClick(id) {
-    console.log(isPointOpen);
     setIsPointOpen((prevState) => {
       const newState = [...prevState];
       newState[id] = !newState[id];
@@ -137,20 +130,6 @@ export default function TestMap() {
         .map((_, i) => waypoints[i] || createRef())
     );
   }, [arrLength]);
-
-  // .
-  // .
-  // .   IDEJOS
-  // .  DARYTI JOG visi taskai butu vienam useState([]). Kuomet reikia skirtingu dalyku naudotis tuo vienu sarasu.
-  // .  Taip pat isvalyti ji vienam metode, kuri issikviesti skirtingose vietose.
-  // .
-  // .
-  // .
-
-  // .
-  // .
-  // .
-
   const onMapLoad = React.useCallback((map) => {
     setMap(map);
   }, []);
@@ -169,9 +148,7 @@ export default function TestMap() {
         content: "Click to find restaurants",
       })
     );
-    // console.log("infoWindow ? null");
     if (infoWindow !== null) {
-      // console.log("infoWindow != null");
       infoWindow.open(map, marker);
     }
   }, [infoWindow, map, marker]);
@@ -183,10 +160,7 @@ export default function TestMap() {
   }, [infoWindow]);
 
   const onInfoWindowClick = React.useCallback(() => {
-    // console.log("aaaaaaaaaaaaa");
     const placesService = new window.google.maps.places.PlacesService(map);
-    // console.log("placesService:", placesService);
-    // console.log("marker.getPosition():", marker.getPosition());
     placesService.nearbySearch(
       {
         location: marker.getPosition(),
@@ -196,42 +170,19 @@ export default function TestMap() {
       (results, status) => {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
           setPlaces(results);
-          // console.log("results:", results);
         }
       }
     );
 
     infoWindow.close();
   }, [infoWindow, map, marker]);
-
-  // .
-  // .
-  // .
-  // .
-  // .
-  // .
-  // .
-  const handleSectionInputChange = (e) => {
-    console.log(e.target.value);
-    const updatedInputsValues = [...saveSectionInputValues];
-    updatedInputsValues[e.target.id] = e.target.value;
-    setSaveSectionInputValues(updatedInputsValues);
-    console.log(e.target.id);
-    console.log("saveSectionInputValues", saveSectionInputValues);
-  };
-  const handlePointInputChange = (e) => {
-    console.log(e.target.value);
-    const updatedInputsValues = [...savePointInputValues];
-    updatedInputsValues[e.target.id] = e.target.value;
-    setSavePointInputValues(updatedInputsValues);
-    console.log("updatedInputsValues", updatedInputsValues);
-    console.log(e.target.id);
-    console.log("savePointInputValues", savePointInputValues);
-  };
-  // .
-  // .
-  // .
-
+  function handleRouteNameInputValue(event) {
+    if (event.target.value.length >= 8) {
+      setRouteNameValue(event.target.value);
+    } else {
+      setRouteNameValue("");
+    }
+  }
   function testPrint() {
     const wayptsForDB = [];
     waypoints.map((item) => {
@@ -259,16 +210,12 @@ export default function TestMap() {
     });
     setfixedWaypoints(wayptsForDB);
     return waypts;
-    // console.log("waypts", waypts);
   }
 
   const handleTravelTypeChange = (type) => (event) => {
     setTravelStyle(type);
     return type;
   };
-  //Užduotis
-  //Ant handleChoosenCountry -> gauti tos šalies miestus iš GOOGLE Maps API į -> console.log();
-
   const emptyInput = (inputId) => (event) => {
     const newState = data.map((obj) => {
       if (obj.id === inputId) {
@@ -281,7 +228,6 @@ export default function TestMap() {
       return obj;
     });
     setData(newState);
-    // console.log(newState);
   };
 
   const updateIcons = () => {
@@ -303,8 +249,16 @@ export default function TestMap() {
       return [...allExtras, <div className="box"></div>];
     });
   };
+  const RemoveInputField = (item) => () => {
+    setExtraInputs((allExtras) => {
+      const indexToRemove = item;
+      const newArray = [...allExtras];
+      newArray.splice(indexToRemove, 1);
+      return newArray;
+    });
+    updateIcons();
+  };
 
-  //Warning: Each child in a list should have a unique "key" prop
   const ShowInputsState = (data) => {
     return Object.keys(data).map((key, id) => {
       return Array.isArray(data) && data[key].inputValue === "Done" ? (
@@ -323,6 +277,9 @@ export default function TestMap() {
             color="#550a0f"
             className={data[key].id}
             value={data[key].inputValue}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
           />
         </div>
       ) : data[key].inputValue === "extra" ? (
@@ -339,7 +296,6 @@ export default function TestMap() {
           <></>
         )
       ) : (
-        // </div>
         <></>
       );
     });
@@ -351,82 +307,22 @@ export default function TestMap() {
   const directionsRendererCallback = (response) => {
     if (response !== null) {
       setDirectionsRendererInfo(response);
-      // setDirections(response);
-      //   console.log(response.getDirections().routes[0].overview_polyline);
-      //   // Get polyline from response and create Path object
-      //   const polyline = response.getDirections().routes[0].overview_polyline;
-      //   console.log("polyline", polyline);
-      //   const path = new window.google.maps.Polyline({
-      //     path: google.maps.geometry.encoding.decodePath(polyline),
-      //   });
-      //   console.log(path);
-      //   // Search for restaurants along the path
-      //   const placesService = new window.google.maps.places.PlacesService(
-      //     document.createElement("div")
-      //   );
-      //   // gauna bet neprintina.. nerodo..
-      //   path.getPath().forEach((latLng) => {
-      //     console.log("111");
-      //     placesService.nearbySearch(
-      //       {
-      //         location: latLng,
-      //         radius: 1000, // search within 1km radius
-      //         type: "restaurant",
-      //       },
-      //       (results, status) => {
-      //         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-      //           setRestaurants((prevRestaurants) => [...prevRestaurants, ...results]);
-      //         }
-      //       }
-      //     );
-      //   });
-      //   console.log(restaurants);
-      //   // showRestaurants(response);
-      //   console.log(restaurants.length);
-      //   restaurants.forEach((waypoint) => {
-      //     const marker = new window.google.maps.Marker(
-      //       {
-      //         position: waypoint.geometry.location,
-      //         clickable: true,
-      //         draggable: false,
-      //         map: response.getMap(),
-      //         title: `Step ${1}`,
-      //         label: {
-      //           text: `${1}`,
-      //           color: "white",
-      //         },
-      //       }
-      //       // onMarkerClick
-      //     );
-      //     // onelegArray.push(marker);
-      //     // marker.addListener("click", () => {
-      //     //   setSelectedMarker(index);
-      //     // });
-      //   });
     }
   };
 
   function showRestaurants(response) {
-    console.log(restaurants.length);
     restaurants.forEach((waypoint) => {
-      const marker = new window.google.maps.Marker(
-        {
-          position: waypoint.end_location,
-          clickable: true,
-          draggable: false,
-          map: response.getMap(),
-          title: `Step ${1}`,
-          label: {
-            text: `${1}`,
-            color: "white",
-          },
-        }
-        // onMarkerClick
-      );
-      // onelegArray.push(marker);
-      // marker.addListener("click", () => {
-      //   setSelectedMarker(index);
-      // });
+      const marker = new window.google.maps.Marker({
+        position: waypoint.end_location,
+        clickable: true,
+        draggable: false,
+        map: response.getMap(),
+        title: `Step ${1}`,
+        label: {
+          text: `${1}`,
+          color: "white",
+        },
+      });
     });
   }
 
@@ -442,7 +338,6 @@ export default function TestMap() {
     if (originRef.current.value === "" || destiantionRef.current.value === "") {
       return;
     }
-    console.log("fixedWaypoints2", fixedWaypoints2);
     // eslint-disable-next-line no-undef
     const directionsService = new google.maps.DirectionsService();
     const results = await directionsService.route({
@@ -454,15 +349,11 @@ export default function TestMap() {
       travelMode: travelStyle,
     });
 
-    console.log("originRef.current.value:", originRef.current.value);
-    console.log("fixedWaypoints2:", fixedWaypoints2);
-    console.log("destiantionRef.current.value:", destiantionRef.current.value);
     const routeMarkersLocations = [];
     routeMarkersLocations.push({
       location: originRef.current.value,
     });
     fixedWaypoints2.map((item) => {
-      console.log("fixed -> routeMarkersLocations:", item.location);
       routeMarkersLocations.push({
         location: item.location,
       });
@@ -471,20 +362,10 @@ export default function TestMap() {
     routeMarkersLocations.push({
       location: destiantionRef.current.value,
     });
-    console.log("fixedWaypoints2.length", fixedWaypoints2.length);
-    setSavePointInputValues(Array.from({ length: fixedWaypoints2.length + 2 }).fill(""));
-    console.log(routeMarkersLocations);
-    console.log("-----=-=-=-=-=:", savePointInputValues);
-    //REIKIA PERDUOTI
-    /*
-originRef.current.value
-destiantionRef.current.value
-    */
-    // console.log("originRef", originRef.current.value);
-    // console.log("fixedWaypoints2", fixedWaypoints2);
-    // const ccaa = JSON.stringify(fixedWaypoints2);
-    // console.log("ccaa", ccaa);
-    // console.log("destiantionRef", destiantionRef.current.value);
+    setSavePointInputValues(
+      Array.from({ length: fixedWaypoints2.length + 2 }).fill("")
+    );
+
     setDirectionsResponse(results); // UPDATE TIK IS 2 KARTO! REIK TVARKYT // AUTOCOMPLETED MAIN WAYPOINTS
     setDirectionsRendererInfo(results);
     const dataOriginLatLng = {
@@ -493,7 +374,6 @@ destiantionRef.current.value
     };
 
     setOriginLatLng(dataOriginLatLng);
-    console.log("results for points get: ", results);
     //Atstumu skaiciavimai
     const distancesBetween = [];
     results.routes[0].legs.map((item) => {
@@ -503,7 +383,6 @@ destiantionRef.current.value
         distance: item.distance.text,
         duration: item.duration.text,
       });
-      // console.log("----", item);
       return item;
     });
 
@@ -526,37 +405,24 @@ destiantionRef.current.value
     const filename = "data.json";
     const contentType = "application/json;charset=utf-8;";
     if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-      var blob = new Blob([decodeURIComponent(encodeURI(JSON.stringify(data)))], {
-        type: contentType,
-      });
+      var blob = new Blob(
+        [decodeURIComponent(encodeURI(JSON.stringify(data)))],
+        {
+          type: contentType,
+        }
+      );
       navigator.msSaveOrOpenBlob(blob, filename);
     } else {
       var a = document.createElement("a");
       a.download = filename;
-      a.href = "data:" + contentType + "," + encodeURIComponent(JSON.stringify(data));
+      a.href =
+        "data:" + contentType + "," + encodeURIComponent(JSON.stringify(data));
       a.target = "_blank";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
     }
   };
-  // function getMapPoints() {
-  //   console.log("directionsRendererInfo", directionsRendererInfo);
-  //   if (directionsRendererInfo !== null) {
-  //     const infoWindow = new google.maps.InfoWindow();
-  //     fixedWaypoints2.addListener("dragend", (event) => {
-  //       const position = draggableMarker.position;
-
-  //       infoWindow.close();
-  //       infoWindow.setContent(`Pin dropped at: ${position.lat()}, ${position.lng()}`);
-  //       infoWindow.open(draggableMarker.map, draggableMarker);
-  //     });
-
-  //     // const markers = mapRef.current.getMarkers();
-  //     // const markers = directionsRendererInfo; // .current.getMarkers();
-  //     // console.log("markers", markers);
-  //   }
-  // }
   function exportMap() {
     const exportData = {
       origin: [originRef.current.value],
@@ -564,7 +430,6 @@ destiantionRef.current.value
       destiantion: [destiantionRef.current.value],
     };
     const ccaa = JSON.stringify(exportData);
-    console.log("ccaa", ccaa);
 
     const filename = "exportedData.json";
     // const contentType = "application/json;charset=utf-8;";
@@ -576,13 +441,9 @@ destiantionRef.current.value
     downloadLink.download = filename;
     document.body.appendChild(downloadLink);
     downloadLink.click();
-
-    // console.log(map.length);
-    // console.log(map);
   }
   const convertSectionDescriptionsForDb = (savedSectionsValues) => {
     const descForDB = [];
-    console.log("convertSectionDescriptionsForDb", savedSectionsValues);
     savedSectionsValues.map((item, i) => {
       if (item === null || item === "") {
         return item;
@@ -598,13 +459,11 @@ destiantionRef.current.value
   };
   const convertPointDescriptionsForDb = (savedPointsValues) => {
     const descForDB = [];
-    console.log("convertPointDescriptionsForDb", savedPointsValues);
     savedPointsValues.map((item, i) => {
       if (item === null) {
         //|| item === ""
         return item;
       } else {
-        console.log("item", item);
         descForDB.push({
           pointOnRouteId: i,
           routePointDescription: item,
@@ -616,13 +475,15 @@ destiantionRef.current.value
   };
 
   function handleCountrySelect(event) {
-    setRouteSelectedCountry(event.target.value);
-    console.log(event.target.value);
+    if (event.target.value == "") {
+      setRouteSelectedCountry(event.target.value);
+    } else {
+      setRouteSelectedCountry(event.target.value);
+    }
   }
   function handleRouteNameChange() {
     const val = document.getElementById("routeName").value;
     setRouteName(val);
-    console.log(val);
   }
   function saveRoute() {
     // event.preventDefault();
@@ -630,32 +491,23 @@ destiantionRef.current.value
     const headers = {
       Authorization: `Bearer ${user.accessToken}`,
     };
-    const sectionDescForDB = convertSectionDescriptionsForDb(saveSectionInputValues);
-    console.log("sectionDescForDB", sectionDescForDB);
+    const sectionDescForDB = convertSectionDescriptionsForDb(
+      saveSectionInputValues
+    );
     saveSectionInputValues.map((item, i) => {
-      console.log("asasasa", item, "---", i);
-      setDisabledSectionInputs[i] == "disabled";
+      setDisabledSectionInputs[i] = "disabled";
       // disabled
     });
-    console.log("saveSectionInputValues", saveSectionInputValues);
     const pointDescForDB = convertPointDescriptionsForDb(savePointInputValues);
-    console.log("pointDescForDB", pointDescForDB);
     savePointInputValues.map((item, i) => {
-      console.log("asasasa", item, "---", i);
-      setDisabledPointInputs[i] == "disabled";
+      setDisabledPointInputs[i] = "disabled";
       // disabled
     });
-    console.log("savePointInputValues", savePointInputValues);
     const exportData = {
       origin: originRef.current.value,
       midWaypoints: fixedWaypoints,
       destiantion: destiantionRef.current.value,
     };
-    console.log(exportData.origin);
-    console.log(exportData.midWaypoints);
-    console.log(exportData.destiantion);
-    console.log("sectionDescForDB", sectionDescForDB);
-    console.log("pointDescForDB", pointDescForDB);
     axios
       .post(
         "http://localhost:5113/api/troutes",
@@ -686,15 +538,11 @@ destiantionRef.current.value
       ) //"{"rname":"Unnamed","rOrigin":"Kaunas, Kauno m. sav., Lietuva","rDestination":"Vilnius, Vilniaus m. sav., Lietuva","midWaypoints":[{"midWaypointLocation":"Telšiai, Telšių rajono savivaldybė, Lietuva","midWaypointStopover":true},{"midWaypointLocation":"Biržai, Biržų rajono savivaldybė, Lietuva","midWaypointStopover":true},{"midWaypointLocation":"Utena, Utenos r. sav., Lietuva","midWaypointStopover":true}],"sectionDescriptions":[],"pointDescriptions":[{"pointOnRouteId":1},{"pointOnRouteId":2,"routePointDescription":"birzaiii"}],"rCountry":"Unknown","rImagesUrl":[{"rImagesUrlLink":"https://images.unsplash.com/photo-1503220317375-aaad61436b1b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTd8fHRyYXZlbHxlbnwwfHwwfHw%3D&w=1000&q=80"},{"rImagesUrlLink":"https://images.unsplash.com/photo-1545389336-cf090694435e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8M3x8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=60"}],"rRecommendationUrl":[{"rRecommendationUrlLink":"https://www.google.com/"},{"rRecommendationUrlLink":"https://cloud.google.com/"}]}"
       .then((response) => console.log(response))
       .catch((err) => console.log(err));
-
-    // setDisabledPointInputs;cd
-    console.log("Save route");
   }
   return (
     <>
       <div className="input-container">
         <div className="container-small">
-          {/*ERROR: unknown key warning */}
           <div className="container-small left">{ShowInputsState(data)}</div>
           <div className="container-small right">
             <div className="box">
@@ -704,7 +552,7 @@ destiantionRef.current.value
                   type="text"
                   placeholder="Origin"
                   ref={originRef}
-                  onBlur={emptyInput(1)} // , "done"
+                  onBlur={emptyInput(1)}
                 />
               </Autocomplete>
             </div>
@@ -715,12 +563,10 @@ destiantionRef.current.value
                   <Autocomplete>
                     <input
                       key={i + 1}
-                      // id={i}
                       ref={waypoints[i]}
                       type="text"
                       placeholder="Location"
-                      // ref={originRef}
-                      onBlur={emptyInput(i + 2)} // , "done"
+                      onBlur={emptyInput(i + 2)}
                     />
                   </Autocomplete>
                 </div>
@@ -745,16 +591,17 @@ destiantionRef.current.value
                   type="text"
                   placeholder="Destination"
                   ref={destiantionRef}
-                  onBlur={emptyInput(10)} // , "done"
+                  onBlur={emptyInput(10)}
                 />
               </Autocomplete>
             </div>
             <ButtonGroup>
               <Button
                 style={{
-                  backgroundColor: "#177a23",
+                  backgroundColor: "#1aa32b",
                   border: "1px solid rgba(72,91,35,0.5)",
                   borderRadius: "8px",
+                  fontWeight: "bold",
                 }}
                 colorScheme="pink"
                 type="submit"
@@ -764,119 +611,105 @@ destiantionRef.current.value
               </Button>
 
               <IconButton
+                style={{
+                  backgroundColor: "#1aa32b",
+                  border: "1px solid rgba(72,91,35,0.5)",
+                  borderRadius: "30px",
+                  width: "30px",
+                }}
                 aria-label="center back"
                 icon={<FaTimes />}
                 onClick={clearRoute}
                 // TODO:
-                //clear mid-waypoints
               />
               <IconButton
+                style={{
+                  backgroundColor: "#1aa32b",
+                  border: "1px solid rgba(72,91,35,0.5)",
+                  borderRadius: "30px",
+                  width: "30px",
+                }}
                 aria-label="center back"
                 icon={<FaWalking />}
                 onClick={handleTravelTypeChange("WALKING")}
                 // TODO:
-                //walking style
               />
               <IconButton
+                style={{
+                  backgroundColor: "#1aa32b",
+                  border: "1px solid rgba(72,91,35,0.5)",
+                  borderRadius: "30px",
+                  width: "30px",
+                }}
                 aria-label="center back"
                 icon={<FaCarSide />}
                 onClick={handleTravelTypeChange("DRIVING")}
                 // TODO:
-                //driving style
               />
             </ButtonGroup>
           </div>
         </div>
         <p></p>
-        <ul className="dropdown-content" style={{ color: "white", padding: "0px 0px 0px 0px" }}>
+        <ul
+          className="dropdown-content"
+          style={{ color: "white", padding: "0px 0px 0px 0px" }}
+        >
           {sectionBetweenPoints.map((item, i) => {
             //SECTION
             return (
-              <div className="pointInfoOpened" key={i} onClick={() => handleSectionClick(i)}>
+              <div
+                className="pointInfoOpened"
+                key={i}
+                onClick={() => handleSectionClick(i)}
+              >
                 <p style={{ margin: "0px 0px 0px 0px", height: "30px" }}>
                   {/* Click me to {isOpen[i] ? "hide" : "show"} the content! */}
-                  {item.start_address.substring(0, item.start_address.indexOf(","))} -{" "}
+                  {item.start_address.substring(
+                    0,
+                    item.start_address.indexOf(",")
+                  )}{" "}
+                  -{" "}
                   {item.end_address.substring(0, item.end_address.indexOf(","))}
                 </p>
                 {isSectionOpen[i] && (
                   <div key={i}>
-                    <p>1 - {item.start_address}</p>
-                    <p>2 - {item.end_address}</p>
-                    <p>Distance: {item.distance}</p>
-                    <p>Duration : {item.duration}</p>
+                    <p>
+                      <TbGps /> 1 - {item.start_address}
+                    </p>
+                    <p>
+                      <TbGps /> 2 - {item.end_address}
+                    </p>
+                    <p>
+                      <RiPinDistanceFill /> Distance: {item.distance}
+                    </p>
+                    <p>
+                      <CgTimelapse /> Duration : {item.duration}
+                    </p>
                     <div
                       key={i}
                       onClick={(e) => {
                         e.stopPropagation();
                       }}
-                    >
-                      <textarea
-                        key={i}
-                        type="text"
-                        id={i}
-                        placeholder="Route Section Description"
-                        className="pointInfoOpenedInput" //FIX -SECTION POINT??
-                        onChange={handleSectionInputChange}
-                        disabled={disabledSectionInputs[i] ? "enabled" : ""}
-                      />
-                    </div>
-                    <div className="route-part-icons">
-                      <IconButton
-                        className="route-part-icons icont-button"
-                        aria-label="center back"
-                        icon={<RiRestaurantLine size={30} />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // handleTravelTypeChange("WALKING");
-                          setRerenderStateForDifferentPath(i); //which path
-                          setRerenderStateForDifferentNeed("RESTAURANT"); //which type of services
-                          setTimeout(() => {
-                            reloadDirectionsRenderer();
-                          }, 2000);
-                        }}
-                        // TODO:
-                        // Show all restaurant around
-                      />
-                      <IconButton
-                        className="route-part-icons icont-button"
-                        aria-label="center back"
-                        icon={<GiBinoculars size={30} />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // handleTravelTypeChange("WALKING");
-                          setRerenderStateForDifferentPath(i); //which path
-                          setRerenderStateForDifferentNeed("SIGNSEEING"); //which type of services
-                          reloadDirectionsRenderer();
-                        }}
-                        // TODO:
-                        // Show all signseeing places
-                      />
-                      <IconButton
-                        className="route-part-icons icont-button"
-                        aria-label="center back"
-                        icon={<RiGasStationLine size={30} />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // handleTravelTypeChange("WALKING");
-                          setRerenderStateForDifferentPath(i); //which path
-                          setRerenderStateForDifferentNeed("GASSTATION"); //which type of services
-                          reloadDirectionsRenderer();
-                        }}
-                        // TODO:
-                        // Show all gas stations
-                      />
-                    </div>
+                    ></div>
+                    <div className="route-part-icons"></div>
                   </div>
                 )}
               </div>
             );
           })}
         </ul>
-        <ul className="dropdown-content" style={{ color: "white", padding: "0px 0px 0px 0px" }}>
+        <ul
+          className="dropdown-content"
+          style={{ color: "white", padding: "0px 0px 0px 0px" }}
+        >
           {routePoints.map((item, i) => {
             //POINT
             return (
-              <div className="pointInfoOpened" key={i} onClick={() => handlePointClick(i)}>
+              <div
+                className="pointInfoOpened"
+                key={i}
+                onClick={() => handlePointClick(i)}
+              >
                 <p style={{ margin: "0px 0px 0px 0px", height: "30px" }}>
                   {/* Click me to {isOpen[i] ? "hide" : "show"} the content! */}
                   {item.location.substring(0, item.location.indexOf(","))}
@@ -899,123 +732,159 @@ destiantionRef.current.value
                         // value={textAreaValue}
                         onChange={handlePointInputChange}
                         disabled={disabledPointInputs[i] ? "enabled" : ""}
-                        //next todo
-                      />
-                      {/* {textAreaValue && <p key={i}>You entered: {textAreaValue}</p>} */}
-                    </div>
-                    <div className="route-part-icons">
-                      <IconButton
-                        className="route-part-icons icont-button"
-                        aria-label="center back"
-                        icon={<RiRestaurantLine size={30} />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // handleTravelTypeChange("WALKING");
-                          setRerenderStateForDifferentPath(i); //which path
-                          setRerenderStateForDifferentNeed("RESTAURANT"); //which type of services
-                          setTimeout(() => {
-                            reloadDirectionsRenderer();
-                          }, 2000);
-                        }}
-                        // TODO:
-                        // Show all restaurant around
-                      />
-                      <IconButton
-                        className="route-part-icons icont-button"
-                        aria-label="center back"
-                        icon={<GiBinoculars size={30} />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // handleTravelTypeChange("WALKING");
-                          setRerenderStateForDifferentPath(i); //which path
-                          setRerenderStateForDifferentNeed("SIGNSEEING"); //which type of services
-                          reloadDirectionsRenderer();
-                        }}
-                        // TODO:
-                        // Show all signseeing places
-                      />
-                      <IconButton
-                        className="route-part-icons icont-button"
-                        aria-label="center back"
-                        icon={<RiGasStationLine size={30} />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // handleTravelTypeChange("WALKING");
-                          setRerenderStateForDifferentPath(i); //which path
-                          setRerenderStateForDifferentNeed("GASSTATION"); //which type of services
-                          reloadDirectionsRenderer();
-                        }}
-                        // TODO:
-                        // Show all gas stations
                       />
                     </div>
+                    <div className="route-part-icons"></div>
                   </div>
                 )}
               </div>
             );
           })}
         </ul>
-        <div className="box">
-          <IconButton
-            aria-label="center back"
-            icon={<FaLocationArrow />}
-            isRound
+        <div className="route-name-button" style={{ fontSize: "12px" }}>
+          <button
+            className="route-name-button"
+            style={{ width: "150px", height: "35px" }}
             onClick={() => {
               map.panTo(originLatLng);
               map.setZoom(9);
             }}
-          />
+          >
+            <p
+              className="route-name-button"
+              style={{
+                display: "inline-block",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "12px",
+              }}
+            >
+              <FaLocationArrow />
+              <br />
+              Route start
+            </p>
+          </button>
         </div>
-        <div className="box">
-          <IconButton
-            width="50px"
-            height="50px"
-            aria-label="center back"
-            icon={<FiDownload />}
-            isRound
-            onClick={() => {
-              exportMap();
-              // map.panTo(originLatLng);
-              // map.setZoom(9);
-            }}
-          />
-        </div>
-        <button
-          id="saveRoute"
-          style={{ width: "100px", height: "100px" }}
-          onClick={() => saveRoute()}
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            paddingTop: "10px",
+            height: "100px",
+            justifyContent: "space-between",
+          }}
         >
-          Save
-        </button>
-
-        <div>
-          <select value={routeSelectedCountry} onChange={handleCountrySelect}>
-            <option value="">-- Select a country --</option>
-            {countries.map((country, i) => (
-              <option key={country.name} value={country.name}>
-                {country.name}
-              </option>
-            ))}
-          </select>
-          <p>Selected country: {routeSelectedCountry}</p>
-        </div>
-        <div>
-          <input type="text" id={"routeName"} placeholder="Route name"></input>
-          <button onClick={handleRouteNameChange}>sd</button>
-        </div>
-
-        {/* <div className="box">
-          <IconButton
-            width="50px"
-            height="50px"
-            aria-label="center back"
-            icon={<AiFillCheckCircle />}
-            isRound
-            onClick={() => {
-              getMapPoints();
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginRight: "10px",
+              height: "60%",
+              width: "90%",
             }}
-          />
-        </div> */}
+          >
+            <select
+              id="country-select"
+              style={{ width: "220px" }}
+              className="route-name-input"
+              value={routeSelectedCountry}
+              onChange={handleCountrySelect}
+            >
+              <option value="">-- Select a country --</option>
+              {countries.map((country, i) => (
+                <option key={country.name} value={country.name}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              margin: "auto",
+              height: "70%",
+              width: "20%",
+            }}
+          >
+            {routeSelectedCountry != "Unknown" &&
+              routeSelectedCountry != "" && (
+                <GiCheckMark
+                  size={35}
+                  style={{
+                    marginRight: "20px",
+                    color: "darkgreen",
+                    borderRadius: "25px",
+                    border: "4px solid darkgreen",
+                    backgroundColor: "white",
+                  }}
+                />
+              )}
+          </div>
+          <p></p>
+        </div>
+        <div
+          classname="route-name"
+          style={{
+            display: "flex",
+            width: "100%",
+            paddingTop: "10px",
+            height: "100px",
+            justifyContent: "space-between",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginRight: "10px",
+              height: "60%",
+              width: "90%",
+            }}
+          >
+            <input
+              className="route-name-input"
+              type="text"
+              id={"routeName"}
+              placeholder="Route title"
+              onChange={handleRouteNameInputValue}
+            ></input>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              margin: "auto",
+              height: "70%",
+              width: "20%",
+            }}
+          >
+            {routeNameValue && routeNameValue != "" && (
+              <GiCheckMark
+                size={35}
+                style={{
+                  marginRight: "20px",
+                  color: "darkgreen",
+                  borderRadius: "25px",
+                  border: "4px solid darkgreen",
+                  backgroundColor: "white",
+                }}
+              />
+            )}
+          </div>
+        </div>
+        <div className="route-name-button">
+          <button className="route-name-button" onClick={handleRouteNameChange}>
+            Save title
+          </button>
+        </div>
+        <div className="route-save-style">
+          <button
+            className="route-save-style"
+            id="saveRoute"
+            onClick={() => saveRoute()}
+          >
+            Save route information
+          </button>
+        </div>
       </div>
 
       <GoogleMap
@@ -1030,45 +899,17 @@ destiantionRef.current.value
         }}
         onLoad={onMapLoad}
       >
-        {/* <Marker
-          position={originLatLng} // marker pos,for infowindow
-          onLoad={onMarkerLoad}
-          onClick={onMarkerClick}
-        /> */}
-        {/* {infoWindow !== null && (
-          <InfoWindow
-            position={originLatLng} // infowindow position
-            onCloseClick={onInfoWindowClose}
-            onLoad={() => {
-              infoWindow.open(map, marker);
-              console.log("clickas", marker);
-              console.log("clickas", map);
-              console.log("clickas", originLatLng);
-            }}
-          >
-            <div onClick={onInfoWindowClick}>
-              Click here to find Restaurants
-            </div>
-          </InfoWindow>
-        )}{" "}
-        {infoWindow === null && <p>cdscd</p>} */}
-
         {/* VEIKIA TACIAU - SPAWNINA TA PATI, REIKIA PERDARYTI JOG PRADINIAI MARKERPOINTAI BUTU KAS 10-20KM ARBA KAZKAIP KITAIP PRASTUMDYTI JUOS. */}
 
-        {
-          (placesState === true && console.log("places--------------------------", places),
-          places.map(
-            // console.log("places--------------------------", place),
-            (place) =>
-              place.map((x) => (
-                <Marker key={x.place_id} position={x.geometry.location} />
-                // console.log("places--------------------------", place)
-              ))
-          ))
-        }
+        {placesState === true &&
+          places.map((place) =>
+            place.map((x) => (
+              <Marker key={x.place_id} position={x.geometry.location} />
+            ))
+          )}
         {directionsResponse && (
           <DirectionsRenderer
-            key={directionsRendererKey} // Naujas key - dirbam is naujo
+            key={directionsRendererKey}
             directions={directionsResponse}
             options={{ suppressMarkers: false, draggable: true }}
             onLoad={directionsRendererCallback}
@@ -1080,170 +921,3 @@ destiantionRef.current.value
     </>
   );
 }
-
-// const directionsRendererCallback = (directionsRenderer) => {
-//   console.log("directionsRenderer", directionsRenderer);
-//   directionsRendererRef.current = directionsRenderer;
-//   if (directionsRenderer !== null) {
-//     // clean up map direction points
-//     if (markersArray !== null) {
-//       console.log("markersArray", markersArray);
-//       for (let i = 0; i < markersArray.length; i++) {
-//         const element = markersArray[i]; //[i][j]
-//         element.setMap(null);
-//       }
-//     }
-//     if (rerenderStateForDifferentPath !== null && rerenderStateForDifferentNeed !== "NONE") {
-//       setPlaces([]);
-//       setPlacesState(false);
-//       const pathIndex = rerenderStateForDifferentPath;
-//       const arr = [];
-//       var index = 0;
-//       const onelegArray = [];
-//       const waypoints = directionsRenderer.getDirections().routes[0].legs[pathIndex].steps;
-//       switch (rerenderStateForDifferentNeed) {
-//         case "RESTAURANT":
-//           waypoints.forEach((waypoint) => {
-//             // papildomu mark'u generavimas
-//             const marker = new window.google.maps.Marker(
-//               {
-//                 position: waypoint.end_location,
-//                 clickable: true,
-//                 draggable: false,
-//                 map: directionsRenderer.getMap(),
-//                 title: `Step ${index + 1}`,
-//                 label: {
-//                   text: `${index + 1}`,
-//                   color: "black",
-//                 },
-//                 // icon: markerIcon,
-//               }
-//               // onMarkerClick
-//             );
-//             index = index + 1;
-//             onelegArray.push(marker);
-//             marker.addListener("click", () => {
-//               setSelectedMarker(index);
-//             });
-//           });
-
-//           setMarkersArray(onelegArray);
-
-//           // TODO !
-//           // perkelti i kita metoda, tiek daug skirtingu reikalu cia but negali !!!
-//           const placesService = new window.google.maps.places.PlacesService(map);
-//           console.log("markersArray", markersArray);
-//           if (markersArray !== null) {
-//             for (let i = 0; i < markersArray.length; i++) {
-//               // for (let j = 0; j < markersArray[i].length; j++) {
-//               const marker = markersArray[i]; //[i][j]
-//               placesService.nearbySearch(
-//                 {
-//                   location: marker.getPosition(),
-//                   radius: 5000,
-//                   type: "restaurant",
-//                 },
-//                 (results, status) => {
-//                   if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-//                     setPlaces((places) => [...places, results]);
-//                     console.log("results after nearbySearch:", marker, results);
-//                   }
-//                 }
-//               );
-//               // }
-//             }
-//             console.log("SWITCH METHOD --- ARRAY OF PLACES:", places);
-//           } else if (markersArray === null) {
-//             return console.log("RESTAURANT       markersArray === null");
-//           }
-
-//           setPlacesState(true);
-
-//           // infoWindow.close();
-//           // }, [infoWindow, map, marker]);
-//           return console.log("RESTAURANT");
-//         case "SIGNSEEING":
-//           // waypoints.forEach((waypoint) => {
-//           //   const marker = new window.google.maps.Marker(
-//           //     {
-//           //       position: waypoint.end_location,
-//           //       clickable: true,
-//           //       draggable: false,
-//           //       map: directionsRenderer.getMap(),
-//           //       title: `Step ${index + 1}`,
-//           //       label: {
-//           //         text: `${index + 1}`,
-//           //         color: "white",
-//           //       },
-//           //     },
-//           //     onMarkerClick
-//           //   );
-//           //   index = index + 1;
-//           //   onelegArray.push(marker);
-//           //   marker.addListener("click", () => {
-//           //     setSelectedMarker(index);
-//           //   });
-//           // });
-
-//           // arr.push(onelegArray);
-//           // setMarkersArray(arr);
-//           return console.log("SIGNSEEING");
-//         case "GASSTATION":
-//           // waypoints.forEach((waypoint) => {
-//           //   const marker = new window.google.maps.Marker(
-//           //     {
-//           //       position: waypoint.end_location,
-//           //       clickable: true,
-//           //       draggable: false,
-//           //       map: directionsRenderer.getMap(),
-//           //       title: `Step ${index + 1}`,
-//           //       label: {
-//           //         text: `${index + 1}`,
-//           //         color: "white",
-//           //       },
-//           //     },
-//           //     onMarkerClick
-//           //   );
-//           //   index = index + 1;
-//           //   onelegArray.push(marker);
-//           //   marker.addListener("click", () => {
-//           //     setSelectedMarker(index);
-//           //   });
-//           // });
-
-//           // arr.push(onelegArray);
-//           // setMarkersArray(arr);
-//           return console.log("GASSTATION");
-//         default:
-//           waypoints.forEach((waypoint) => {
-//             const marker = new window.google.maps.Marker(
-//               {
-//                 position: waypoint.end_location,
-//                 clickable: true,
-//                 draggable: false,
-//                 map: directionsRenderer.getMap(),
-//                 title: `Step ${index + 1}`,
-//                 label: {
-//                   text: `${index + 1}`,
-//                   color: "white",
-//                 },
-//               },
-//               onMarkerClick
-//             );
-//             index = index + 1;
-//             onelegArray.push(marker);
-//             marker.addListener("click", () => {
-//               setSelectedMarker(index);
-//             });
-//           });
-//           setMarkersArray(onelegArray);
-//           return console.log("++++DEFAULT----");
-//       }
-//     } else if (
-//       rerenderStateForDifferentPath === null &&
-//       rerenderStateForDifferentNeed === "NONE"
-//     ) {
-//       return false;
-//     }
-//   }
-// };
