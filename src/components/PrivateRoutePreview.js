@@ -487,6 +487,10 @@ export default function PrivateRoutePreview(textas) {
       if (imageUrl.length < 10) {
         console.log("Please insert https link");
       } else {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const headers = {
+          Authorization: `Bearer ${user.accessToken}`,
+        };
         axios
           .post(
             "http://localhost:5113/api/troutes/" +
@@ -494,11 +498,13 @@ export default function PrivateRoutePreview(textas) {
               "/newimageurl",
             {
               rImagesUrlLink: imageUrl,
-            }
+            },
+            { headers }
           )
           .then((response) => {
             const item = response.data; // Assuming the response data is an array with one item
             if (item !== null) {
+              setRerenderPage(rerenderPage + 1);
               setAllImagesUrlsForRoute((prevArray) => {
                 const updatedArray = [...prevArray];
                 updatedArray[allImagesUrlsForRoute.length] = {
@@ -751,7 +757,7 @@ export default function PrivateRoutePreview(textas) {
           rDestination: data.rDestination,
           rTripCost: 50,
           rRating: 4.5,
-          rIsPublished: true,
+          rIsPublished: false,
           rCountry: "LT", //data.rCountry,
           rImagesUrl: allImagesUrlsForRoute,
           rRecommendationUrl: allRecommendationsUrlsForRoute,
@@ -762,6 +768,7 @@ export default function PrivateRoutePreview(textas) {
         }
       )
       .then((response) => {
+        setRerenderPage(rerenderPage + 1);
         console.log(response.data);
         return response.data;
       })
@@ -892,6 +899,7 @@ export default function PrivateRoutePreview(textas) {
         }
       )
       .then((response) => {
+        setRerenderPage(rerenderPage + 1);
         return response.data;
       })
       .catch((err) => console.log("err", err));
@@ -1170,7 +1178,7 @@ export default function PrivateRoutePreview(textas) {
           )}
           {allRoutePointsDescriptions.length <= 5 && (
             <div className="private-container-main-left buttons">
-              {allRoutePointsDescriptions.map((item) => (
+              {allRoutePointsDescriptions.map((item, i) => (
                 <button
                   style={{
                     backgroundColor:
@@ -1183,7 +1191,7 @@ export default function PrivateRoutePreview(textas) {
                       : ""
                   }
                 >
-                  {item.pointId}
+                  {i + 1}
                 </button>
               ))}
             </div>
@@ -1221,15 +1229,17 @@ export default function PrivateRoutePreview(textas) {
                 style={{
                   display: "block",
                   maxHeight:
-                    allRecommendationsUrlsForRoute.length > 4
-                      ? "120px"
+                    allRecommendationsUrlsForRoute.length > 3
+                      ? "100px"
                       : "none",
+                  maxWidth:
+                    allRecommendationsUrlsForRoute.length > 3 ? "90%" : "90%",
                   overflowY:
-                    allRecommendationsUrlsForRoute.length > 4
+                    allRecommendationsUrlsForRoute.length > 3
                       ? "scroll"
                       : "none",
                   margin:
-                    allRecommendationsUrlsForRoute.length > 4
+                    allRecommendationsUrlsForRoute.length > 3
                       ? "0px auto"
                       : "0px auto",
                 }}
@@ -1371,7 +1381,7 @@ export default function PrivateRoutePreview(textas) {
                     onClick={targetExtraPointOnMap(itemA, i)}
                     key={i}
                   >
-                    {i}
+                    {i + 1}
                   </button>
                 ))}
 

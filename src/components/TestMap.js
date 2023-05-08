@@ -176,6 +176,11 @@ export default function TestMap() {
 
     infoWindow.close();
   }, [infoWindow, map, marker]);
+  const handlePointInputChange = (e) => {
+    const updatedInputsValues = [...savePointInputValues];
+    updatedInputsValues[e.target.id] = e.target.value;
+    setSavePointInputValues(updatedInputsValues);
+  };
   function handleRouteNameInputValue(event) {
     if (event.target.value.length >= 8) {
       setRouteNameValue(event.target.value);

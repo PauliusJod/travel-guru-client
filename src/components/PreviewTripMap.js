@@ -40,6 +40,7 @@ export default function PreviewTripMap(textas) {
   const [isPageLoaded, setIsPageLoaded] = useState(false);
   const [isPageContentLoaded, setIsPageContentLoaded] = useState(false);
   const [directionsRendererKey, setDirectionsRendererKey] = useState(1);
+  // const [mapRendererKey, setMapRendererKey] = useState(1);
 
   const [allRouteMidWaypoints, setAllRouteMidWaypoints] = useState(null);
   const [allRouteSectionsDescriptions, setAllRouteSectionsDescriptions] =
@@ -282,6 +283,7 @@ export default function PreviewTripMap(textas) {
               commentId: item.commentId,
               commentText: item.commentText,
               commentRating: item.commentRating,
+              userName: item.userName,
               commentDate: formattedDate,
               TRouterouteId: item.TRouterouteId,
             });
@@ -401,7 +403,6 @@ export default function PreviewTripMap(textas) {
     } else {
       document.getElementById("additional-show").style.display = "block";
     }
-    // console.log("+++++++++++++++++++", allRoutePointsDescriptions);
   };
   const targetExtraPointOnMap = (item, id) => {
     console.log("item", item);
@@ -423,8 +424,12 @@ export default function PreviewTripMap(textas) {
       document.getElementById("add-m-d").value =
         item.additionalPointInformation;
     }
+    // reloadMapRenderer();
   };
 
+  // const reloadMapRenderer = () => {
+  //   setMapRendererKey((prevKey) => prevKey + 1);
+  // };
   function handleAdditionalMarkerDescription() {
     const val = document.getElementById("add-m-d").value;
     setAdditionalMarkerDescription({
@@ -456,6 +461,7 @@ export default function PreviewTripMap(textas) {
           "/newcomment",
         {
           commentText: commentFieldValue,
+          userName: userName,
         },
         { headers }
       )
@@ -573,44 +579,48 @@ export default function PreviewTripMap(textas) {
         </div>
         <div className="view-container-main-right">
           {isPageContentLoaded && (
-            <GoogleMap
-              center={centerByPoint || centerPoint}
-              zoom={zoomByPoint || 9}
-              mapContainerClassName="view-map-container"
-              options={{
-                zoomControl: false,
-                streetViewControl: false,
-                mapTypeControl: false,
-                fullscreenControl: false,
-              }}
-              onLoad={onMapLoad}
-            >
-              {allRoutePointsDescriptions &&
-                allRoutePointsDescriptions.map(
-                  (item) =>
-                    item.additionalPoints &&
-                    item.additionalPoints.map((point) => (
-                      <>
-                        <Marker
-                          key={point.id}
-                          position={{
-                            lat: point.additionalPointCoordX,
-                            lng: point.additionalPointCoordY,
-                          }}
-                        />
-                      </>
-                    ))
-                )}
+            <>
+              {console.log("sddsa", zoomByPoint)}
+              <GoogleMap
+                // key={mapRendererKey}
+                center={centerByPoint || centerPoint}
+                zoom={zoomByPoint ? zoomByPoint : 6}
+                mapContainerClassName="view-map-container"
+                options={{
+                  zoomControl: false,
+                  streetViewControl: false,
+                  mapTypeControl: false,
+                  fullscreenControl: false,
+                }}
+                onLoad={onMapLoad}
+              >
+                {allRoutePointsDescriptions &&
+                  allRoutePointsDescriptions.map(
+                    (item) =>
+                      item.additionalPoints &&
+                      item.additionalPoints.map((point) => (
+                        <>
+                          <Marker
+                            key={point.id}
+                            position={{
+                              lat: point.additionalPointCoordX,
+                              lng: point.additionalPointCoordY,
+                            }}
+                          />
+                        </>
+                      ))
+                  )}
 
-              {directionsResponse && (
-                <DirectionsRenderer
-                  key={directionsRendererKey}
-                  directions={directionsResponse}
-                  options={{ suppressMarkers: false, draggable: false }}
-                  onLoad={directionsRendererCallback}
-                />
-              )}
-            </GoogleMap>
+                {directionsResponse && (
+                  <DirectionsRenderer
+                    key={directionsRendererKey}
+                    directions={directionsResponse}
+                    options={{ suppressMarkers: false, draggable: false }}
+                    onLoad={directionsRendererCallback}
+                  />
+                )}
+              </GoogleMap>
+            </>
           )}
         </div>
       </div>
@@ -757,8 +767,8 @@ export default function PreviewTripMap(textas) {
                 <div key={i} className="comment">
                   <div className="comment add-left">
                     <CgProfile size={25} style={{ margin: "auto" }}></CgProfile>
-                    <p style={{ fontWeight: 500 }}>{item.commentId}</p>
-
+                    <p style={{ fontWeight: 500 }}>{item.userName}</p>
+                    {console.log(item)}
                     <p>{item.commentDate}</p>
                   </div>
                   <div
