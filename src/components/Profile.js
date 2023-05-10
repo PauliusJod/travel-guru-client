@@ -129,35 +129,35 @@ export default function Profile() {
                   {console.log(oneUserCreatedRoute)}
                   {oneUserCreatedRoute.rImagesUrl != null &&
                   oneUserCreatedRoute.rImagesUrl != undefined ? (
-                    <>
+                    <div>
                       <img
                         key={oneUserCreatedRoute.routeId}
                         src={oneUserCreatedRoute.rImagesUrl[0].rImagesUrlLink}
                         alt={oneUserCreatedRoute.routeId}
-                        width="200"
-                        height="200"
+                        width="150"
+                        height="150"
                         style={{ objectFit: "cover" }}
                         onClick={() => handleClick(oneUserCreatedRoute)}
                       ></img>
-                      <p style={{ fontSize: "24px", margin: "5px" }}>
+                      <p style={{ fontSize: "20px", margin: "5px" }}>
                         {oneUserCreatedRoute.rName}
                       </p>
-                    </>
+                    </div>
                   ) : (
-                    <>
+                    <div>
                       <img
                         key={oneUserCreatedRoute.routeId}
                         src={myImage2}
                         alt={oneUserCreatedRoute.routeId}
-                        width="200"
-                        height="200"
+                        width="150"
+                        height="150"
                         style={{ objectFit: "cover" }}
                         onClick={() => handleClick(oneUserCreatedRoute)}
                       ></img>
-                      <p style={{ fontSize: "24px", margin: "5px" }}>
+                      <p style={{ fontSize: "20px", margin: "5px" }}>
                         {oneUserCreatedRoute.rName}
                       </p>
-                    </>
+                    </div>
                   )}
                 </div>
               ))}
