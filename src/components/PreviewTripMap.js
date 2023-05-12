@@ -99,7 +99,7 @@ export default function PreviewTripMap(textas) {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     const userInfo = jwt_decode(user.accessToken);
-
+    console.log("read", location.state.message);
     setUserName(
       userInfo["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]
     );
@@ -350,7 +350,8 @@ export default function PreviewTripMap(textas) {
     try {
       if (isLoaded) {
         const data = location.state.message;
-        if (data.origin === "" || data.destination === "") {
+        console.log("origin,dest", data.rOrigin, "+++++", data.rDestination);
+        if (data.rOrigin === "" || data.rDestination === "") {
           return;
         }
         // console.log("allRouteMidWaypoints---", allRouteMidWaypoints);
@@ -471,6 +472,21 @@ export default function PreviewTripMap(textas) {
         document.getElementById("c-f").value = "";
       });
   };
+  const share = () => {
+    navigator.share({
+      title: "Check out this link!",
+      text: "Description of the link",
+      url:
+        "http://localhost:3000/previewTripMap/" +
+        location.state.message.routeId +
+        "/" +
+        location.state.message.rName +
+        "/" +
+        location.state.message.rOrigin +
+        "/" +
+        location.state.message.rDestination,
+    });
+  };
   const location = useLocation();
   if (!isLoaded) {
     return <SkeletonText />;
@@ -486,10 +502,13 @@ export default function PreviewTripMap(textas) {
       <h1 style={{ display: "flex", width: "100%", justifyContent: "center" }}>
         {location.state.message.rName}
       </h1>
+      <div className="share-button">
+        <button onClick={share}>Share</button>
+      </div>
       <div className="view-container-main">
         <div className="view-container-main-left">
           <div className="view-container-main-left top">
-            <h1>{location.state.message.rName}</h1>
+            <h4>{location.state.message.rName}</h4>
           </div>
           <div className="view-container-main-left buttons">
             {allRoutePointsDescriptions.map((item) => (

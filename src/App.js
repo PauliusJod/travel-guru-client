@@ -1,10 +1,11 @@
 import React, { Component } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation, Navigate } from "react-router-dom";
 import AppRoutes from "./AppRoutes";
 import { Layout } from "./components/Layout";
 import "./custom.css";
 import "./App.css";
 import logo from "./components/images/pexels-quang-nguyen-vinh-2166711.jpg";
+import PreviewTripMap from "./components/PreviewTripMap";
 
 export default class App extends Component {
   // static displayName = App.name;
@@ -18,6 +19,14 @@ export default class App extends Component {
               const { element, ...rest } = route;
               return <Route key={index} {...rest} element={element} />;
             })}
+            {/* <Route
+              path="/previewTripMap/:itemRouteId/:itemRouteName"
+              element={<PreviewTripMap />}
+            /> */}
+            {/* <Route
+              path="/previewTripMap"
+              element={<RedirectToPreviewTripMap />}
+            /> */}
           </Routes>
         </Layout>
       </div>

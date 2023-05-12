@@ -18,6 +18,7 @@ import {
   IconButton,
   SkeletonText,
   Textarea,
+  border,
 } from "@chakra-ui/react";
 
 import { GiCheckMark } from "react-icons/gi";
@@ -80,6 +81,10 @@ export default function PrivateRoutePreview(textas) {
   const [currentAddPointIdInList, setCurrentAddPointIdInList] = useState(0);
   const [currentPointId, setCurrentPointId] = useState(0);
   //set ids
+  // ERROR HANDLERS
+
+  const [noMoreAdditionalPoints, setNoMoreAdditionalPoints] = useState(false);
+  // ERROR HANDLERS--------------------------
 
   const [pointDescriptionValue, setPointDescriptionValue] = useState(null);
 
@@ -127,6 +132,12 @@ export default function PrivateRoutePreview(textas) {
     slidesToScroll: 1,
     slide: "div",
   };
+
+  /*
+  allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
+              .additionalPoints
+              editint reikia atskirai su db po sito saraso update'o
+  */
   const [error, setError] = useState(null);
   const [rerenderPage, setRerenderPage] = useState(0);
   useEffect(() => {
@@ -397,6 +408,7 @@ export default function PrivateRoutePreview(textas) {
     setPointDescriptionValue(item.routePointDescription);
     document.getElementById("add-r-p-d").value = item.routePointDescription;
 
+    setNoMoreAdditionalPoints(false);
     setPointIdIsEditing(item.pointId);
     setChoosenRouteMarkForAdditionalTable(item.pointOnRouteId);
   };
@@ -408,24 +420,75 @@ export default function PrivateRoutePreview(textas) {
       lng: event.latLng.lng(),
     });
   };
+  // const handleSaveNewExtraCoords = (event) => {
+  //   if (
+  //     additionalMarkersOnEdit.length === 5 ||
+  //     additionalMarkersOnEdit.length > 5
+  //   ) {
+  //   } else if (additionalMarkersOnEdit.length < 5) {
+  //     setAdditionalMarkersOnEdit((prevPositions) => [
+  //       ...prevPositions,
+  //       {
+  //         pointId: pointIdIsEditing,
+  //         additionalPointInformation: "",
+  //         additionalPointCoordX: markerPosition.lat,
+  //         additionalPointCoordY: markerPosition.lng,
+  //       },
+  //     ]);
+  //     setMarkerPosition(null);
+  //     setToggleAdditionalButton(true);
+  //   }
+  // };
   const handleSaveNewExtraCoords = (event) => {
-    if (
-      additionalMarkersOnEdit.length === 5 ||
-      additionalMarkersOnEdit.length > 5
-    ) {
-    } else if (additionalMarkersOnEdit.length < 5) {
-      setAdditionalMarkersOnEdit((prevPositions) => [
-        ...prevPositions,
-        {
-          pointId: pointIdIsEditing,
-          additionalPointInformation: "",
-          additionalPointCoordX: markerPosition.lat,
-          additionalPointCoordY: markerPosition.lng,
-        },
-      ]);
-      setToggleAdditionalButton(true);
+    console.log(
+      "aaa",
+      allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
+        .additionalPoints.length
+    );
+    console.log("ccccc", choosenRouteMarkForAdditionalTable);
+
+    const additionalPoints =
+      allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
+        .additionalPoints;
+
+    if (additionalPoints.length === 5 || additionalPoints.length > 5) {
+      setNoMoreAdditionalPoints(true);
+    } else if (additionalPoints.length < 5) {
+      //allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable].additionalPoints.length addpoint in list
+      axios
+        .post(
+          "http://localhost:5113/api/troutes/" +
+            location.state.message.routeId +
+            "/point/" +
+            pointIdIsEditing +
+            "/additionalpoints",
+          {
+            additionalPointIdInList: additionalPoints.length,
+            additionalPointCoordX: markerPosition.lat,
+            additionalPointCoordY: markerPosition.lng,
+            additionalPointInformation: "",
+            additionalPointPlaceName: null,
+            additionalPointPlaceId: null,
+            additionalPointPlaceRating: null,
+            additionalPointPlaceType: null,
+            additionalPointPlaceRefToMaps: null,
+          }
+        )
+        .then((response) => {
+          console.log(response.data);
+          GetPointsDescFromDatabase();
+        });
+
+      setMarkerPosition(null);
+      // setToggleAdditionalButton(true);
     }
+    console.log(
+      "end of method:",
+      allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
+        .additionalPoints
+    );
   };
+
   const saveDescriptionTextToDB = (event) => {
     var routeIdLocal = location.state.message.routeId;
     var pointRouteIdLocal = pointIdIsEditing;
@@ -632,6 +695,7 @@ export default function PrivateRoutePreview(textas) {
     });
     setCenterByPoint(centerPoint);
     setZoomByPoint(9);
+    setNoMoreAdditionalPoints(false);
     setCurrentAddPointIdInList(item.additionalPointIdInList);
     if (
       item.additionalPointInformation == null &&
@@ -642,17 +706,52 @@ export default function PrivateRoutePreview(textas) {
       document.getElementById("add-m-d").value =
         item.additionalPointInformation;
     }
+    setAllPossibleLocationsForAdditionalPoint([]);
     setAdditionalMarkerDescriptionDisplay(item.additionalPointInformation);
   };
+  const removeAdditionalPoint = () => {
+    console.log("remove point?: ", currentAddPointIdInList);
+
+    const foundPoint = allRoutePointsDescriptions[
+      choosenRouteMarkForAdditionalTable
+    ].additionalPoints.find(
+      (point) => point.additionalPointIdInList === currentAddPointIdInList
+    );
+
+    if (foundPoint) {
+      console.log("Found point:", foundPoint);
+      //remove troutes/{trouteId}/point/{pointId}/removeadditional/{pointInListId}
+      axios
+        .delete(
+          "http://localhost:5113/api/troutes/" +
+            location.state.message.routeId +
+            "/point/" +
+            currentPointId +
+            "/removeadditional/" +
+            currentAddPointIdInList
+        )
+        .then((response) => {
+          console.log(response.data);
+
+          GetPointsDescFromDatabase();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      console.log("Can't delete. Try later");
+    }
+  };
+
   const saveAdditionalMarkersextra = (index, additionalMarkersOnEditextra) => {
     setAllAdditionalMarkersOnEdit((prevArray) => {
       if (allAdditionalMarkersOnEdit[index] != null) {
-        setToggleAdditionalButton(false);
+        // setToggleAdditionalButton(false);
         const updatedArray = [...prevArray];
         updatedArray[index] = additionalMarkersOnEditextra;
         return updatedArray;
       } else if (allAdditionalMarkersOnEdit[index] === undefined) {
-        setToggleAdditionalButton(false);
+        // setToggleAdditionalButton(false);
         const updatedArray = [...prevArray];
         updatedArray[index] = additionalMarkersOnEditextra;
         return updatedArray;
@@ -669,7 +768,7 @@ export default function PrivateRoutePreview(textas) {
       if (
         allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] != null
       ) {
-        setToggleAdditionalButton(false);
+        // setToggleAdditionalButton(false);
         const updatedArray = [...prevArray];
         updatedArray[choosenRouteMarkForAdditionalTable] =
           additionalMarkersOnEdit;
@@ -678,7 +777,7 @@ export default function PrivateRoutePreview(textas) {
         allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] ===
         undefined
       ) {
-        setToggleAdditionalButton(false);
+        // setToggleAdditionalButton(false);
         const updatedArray = [...prevArray];
         updatedArray[choosenRouteMarkForAdditionalTable] =
           additionalMarkersOnEdit;
@@ -712,39 +811,90 @@ export default function PrivateRoutePreview(textas) {
 
     setAllRecommendationsUrlsForRoute(newArray);
   };
+  // const SaveAllChangesToDB = () => {
+  //   if (!allAdditionalMarkersOnEdit) {
+  //     console.log("allAdditionalMarkersOnEdit is undefined or null");
+  //     return;
+  //   }
+  //   const extra = allAdditionalMarkersOnEdit.map((item, index) =>
+  //     item
+  //       ? item.map((itemB, j) => {
+  //           if (!itemB) {
+  //             return null;
+  //           }
+  //           return {
+  //             additionalPointRouteId: location.state.message.routeId,
+  //             additionalPointIdInList: j,
+  //             additionalPointCoordX: itemB.additionalPointCoordX,
+  //             additionalPointCoordY: itemB.additionalPointCoordY,
+  //             additionalPointInformation: itemB.additionalPointInformation,
+
+  //             additionalPointPlaceId: itemB.additionalPointPlaceId,
+  //             additionalPointPlaceName: itemB.additionalPointPlaceName,
+  //             additionalPointPlaceRating: itemB.additionalPointPlaceRating,
+  //             additionalPointPlaceRefToMaps:
+  //               itemB.additionalPointPlaceRefToMaps,
+  //             additionalPointPlaceType: itemB.additionalPointPlaceType,
+
+  //             TroutePointDescriptionpointId: itemB.pointId,
+  //           };
+  //         })
+  //       : []
+  //   );
+  //   setAllAdditionalMarkersForDB(extra);
+  //   setRerenderPage(rerenderPage + 1);
+  // };
   const SaveAllChangesToDB = () => {
-    if (!allAdditionalMarkersOnEdit) {
+    console.log(
+      allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
+        .additionalPoints
+    );
+    if (
+      !allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
+        .additionalPoints
+    ) {
       console.log("allAdditionalMarkersOnEdit is undefined or null");
       return;
     }
-    const extra = allAdditionalMarkersOnEdit.map((item, index) =>
-      item
-        ? item.map((itemB, j) => {
-            if (!itemB) {
-              return null;
-            }
-            return {
-              additionalPointRouteId: location.state.message.routeId,
-              additionalPointIdInList: j,
-              additionalPointCoordX: itemB.additionalPointCoordX,
-              additionalPointCoordY: itemB.additionalPointCoordY,
-              additionalPointInformation: itemB.additionalPointInformation,
 
-              additionalPointPlaceId: itemB.additionalPointPlaceId,
-              additionalPointPlaceName: itemB.additionalPointPlaceName,
-              additionalPointPlaceRating: itemB.additionalPointPlaceRating,
-              additionalPointPlaceRefToMaps:
-                itemB.additionalPointPlaceRefToMaps,
-              additionalPointPlaceType: itemB.additionalPointPlaceType,
+    const extra = allRoutePointsDescriptions[
+      choosenRouteMarkForAdditionalTable
+    ].additionalPoints.map((item) => {
+      if (!item) {
+        return null;
+      }
 
-              TroutePointDescriptionpointId: itemB.pointId,
-            };
-          })
-        : []
-    );
+      const {
+        pointId,
+        additionalPointCoordX,
+        additionalPointCoordY,
+        additionalPointInformation,
+        additionalPointPlaceId,
+        additionalPointPlaceName,
+        additionalPointPlaceRating,
+        additionalPointPlaceRefToMaps,
+        additionalPointPlaceType,
+      } = item;
+
+      return {
+        additionalPointRouteId: location.state.message.routeId,
+        additionalPointIdInList: item.additionalPointIdInList,
+        additionalPointCoordX,
+        additionalPointCoordY,
+        additionalPointInformation,
+        additionalPointPlaceId,
+        additionalPointPlaceName,
+        additionalPointPlaceRating,
+        additionalPointPlaceRefToMaps,
+        additionalPointPlaceType,
+        TroutePointDescriptionpointId: pointId,
+      };
+    });
+
     setAllAdditionalMarkersForDB(extra);
     setRerenderPage(rerenderPage + 1);
   };
+
   function updateRouteToDB() {
     const user = JSON.parse(localStorage.getItem("user"));
     const userInfo = jwt_decode(user.accessToken);
@@ -789,7 +939,7 @@ export default function PrivateRoutePreview(textas) {
     element.style.borderStyle = "solid solid solid solid";
     element.style.borderRadius = "5px";
   }
-  function searchNearbyRestaurants(index, pointLocation) {
+  function searchNearbyRestaurants(pointLocation) {
     const placesService = new window.google.maps.places.PlacesService(map);
     placesService.nearbySearch(
       {
@@ -806,7 +956,7 @@ export default function PrivateRoutePreview(textas) {
     );
   }
 
-  function searchNearbyMuseums(index, pointLocation) {
+  function searchNearbyMuseums(pointLocation) {
     const placesService = new window.google.maps.places.PlacesService(map);
     placesService.nearbySearch(
       {
@@ -830,7 +980,7 @@ export default function PrivateRoutePreview(textas) {
     );
   }
 
-  function searchNearbyGasStation(index, pointLocation) {
+  function searchNearbyGasStation(pointLocation) {
     const placesService = new window.google.maps.places.PlacesService(map);
     placesService.nearbySearch(
       {
@@ -951,196 +1101,424 @@ export default function PrivateRoutePreview(textas) {
       >
         <div className="additional-table-list-container-content">
           {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable] &&
-            allRoutePointsDescriptions[
-              choosenRouteMarkForAdditionalTable
-            ].additionalPoints.map((itemA, i) => (
-              <div style={{ paddingBottom: "5px" }}>
-                <div
-                  id={`element-${itemA.additionalPointIdInList}`}
-                  className="additional-table-list-container-content-element"
+          allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
+            .additionalPoints[currentAddPointIdInList] ? (
+            <div style={{ paddingBottom: "5px" }}>
+              <div
+                id={`element-${allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable].additionalPoints[currentAddPointIdInList].additionalPointIdInList}`}
+                className="additional-table-list-container-content-element"
+                onClick={() =>
+                  showPopUpElement(
+                    allRoutePointsDescriptions[
+                      choosenRouteMarkForAdditionalTable
+                    ].additionalPoints[currentAddPointIdInList]
+                      .additionalPointIdInList
+                  )
+                }
+              >
+                <p style={{ paddingLeft: "10px", paddingTop: "10px" }}>
+                  Mark near point -{" "}
+                  {
+                    allRoutePointsDescriptions[
+                      choosenRouteMarkForAdditionalTable
+                    ].additionalPoints[currentAddPointIdInList]
+                      .additionalPointIdInList
+                  }
+                </p>
+                <button
+                  style={{ display: "block", margin: "10px 10px" }}
                   onClick={() =>
-                    showPopUpElement(itemA.additionalPointIdInList)
+                    //NEARBY MUSEUM
+                    searchNearbyRestaurants({
+                      lat: allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointCoordX,
+                      lng: allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointCoordY,
+                    })
                   }
                 >
-                  <p style={{ paddingLeft: "10px", paddingTop: "10px" }}>
-                    Mark near point - {itemA.additionalPointIdInList}
-                  </p>
-                  {/* <button
-                    style={{
-                      display: "block",
-                      margin: "10px 10px",
-                      width: "120px",
-                      borderRadius: "5px",
-                    }}
-                    onClick={() => targetPointInPopUp(itemA, i)}
-                    key={i}
-                  >
-                    Save changes
-                  </button> */}
-                  <button
-                    style={{ display: "block", margin: "10px 10px" }}
-                    onClick={() =>
-                      //NEARBY MUSEUM
-                      searchNearbyRestaurants(i, {
-                        lat: itemA.additionalPointCoordX,
-                        lng: itemA.additionalPointCoordY,
-                      })
-                    }
-                  >
-                    <MdOutlineMuseum size={25} style={{ color: "darkred" }} />
-                  </button>
-                  <button
-                    style={{ display: "block", margin: "10px 10px" }}
-                    onClick={() =>
-                      //NEARBY GAS STATION
-                      searchNearbyGasStation(i, {
-                        lat: itemA.additionalPointCoordX,
-                        lng: itemA.additionalPointCoordY,
-                      })
-                    }
-                  >
-                    <MdLocalGasStation size={25} style={{ color: "darkred" }} />
-                  </button>
-                  <button
-                    style={{ display: "block", margin: "10px 10px" }}
-                    onClick={() =>
-                      searchNearbyMuseums(i, {
-                        lat: itemA.additionalPointCoordX,
-                        lng: itemA.additionalPointCoordY,
-                      })
-                    }
-                  >
-                    <RiRestaurantLine size={25} style={{ color: "darkred" }} />
-                  </button>
-                </div>
-                {/* OPENED */}
-                <div
-                  id={`options-${itemA.additionalPointIdInList}`}
-                  className="additional-table-list-container-content-element-options"
+                  <MdOutlineMuseum size={25} style={{ color: "darkred" }} />
+                </button>
+                <button
+                  style={{ display: "block", margin: "10px 10px" }}
                   onClick={() =>
-                    hidePopUpElement(itemA.additionalPointIdInList)
+                    //NEARBY GAS STATION
+                    searchNearbyGasStation({
+                      lat: allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointCoordX,
+                      lng: allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointCoordY,
+                    })
                   }
                 >
-                  <div style={{ height: "85%", overflow: "auto" }}>
-                    {allPossibleLocationsForAdditionalPoint &&
-                      allPossibleLocationsForAdditionalPoint.map((itemR, i) => (
-                        <>
-                          <div
-                            id={i}
-                            data-div-id={i}
-                            className="single-options"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              saveChoosenPlaceToVisit(itemR, itemA, i);
+                  <MdLocalGasStation size={25} style={{ color: "darkred" }} />
+                </button>
+                <button
+                  style={{ display: "block", margin: "10px 10px" }}
+                  onClick={() =>
+                    searchNearbyMuseums({
+                      lat: allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointCoordX,
+                      lng: allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointCoordY,
+                    })
+                  }
+                >
+                  <RiRestaurantLine size={25} style={{ color: "darkred" }} />
+                </button>
+              </div>
+              {/* OPENED */}
+              <div
+                id={`options-${allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable].additionalPoints[currentAddPointIdInList].additionalPointIdInList}`}
+                className="additional-table-list-container-content-element-options"
+                onClick={() =>
+                  hidePopUpElement(
+                    allRoutePointsDescriptions[
+                      choosenRouteMarkForAdditionalTable
+                    ].additionalPoints[currentAddPointIdInList]
+                      .additionalPointIdInList
+                  )
+                }
+              >
+                <div style={{ height: "85%", overflow: "auto" }}>
+                  {allPossibleLocationsForAdditionalPoint &&
+                    allPossibleLocationsForAdditionalPoint.map((itemR, i) => (
+                      <>
+                        <div
+                          id={i}
+                          data-div-id={i}
+                          className="single-options"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            saveChoosenPlaceToVisit(
+                              itemR,
+                              allRoutePointsDescriptions[
+                                choosenRouteMarkForAdditionalTable
+                              ].additionalPoints[currentAddPointIdInList],
+                              i
+                            );
+                          }}
+                        >
+                          <p
+                            style={{
+                              display: "flex",
+                              width: "35%",
+                              justifyContent: "center",
+                              margin: "auto",
                             }}
                           >
-                            <p
-                              style={{
-                                display: "flex",
-                                width: "35%",
-                                justifyContent: "center",
-                                margin: "auto",
-                              }}
-                            >
-                              "{itemR.name}"
-                            </p>
-                            <p
-                              style={{
-                                display: "flex",
-                                width: "15%",
-                                margin: "auto",
-                                justifyContent: "center",
-                              }}
-                            >
-                              {itemR?.opening_hours?.open_now ? (
-                                <HiOutlineLockOpen
-                                  size={20}
-                                  title="Working now"
-                                  style={{ color: "darkgreen" }}
-                                />
-                              ) : (
-                                <HiOutlineLockClosed
-                                  size={20}
-                                  title="Not working now"
-                                  style={{ color: "darkred" }}
-                                />
-                              )}
-                            </p>
-                            <p
-                              style={{
-                                display: "flex",
-                                width: "30%",
-                                justifyContent: "center",
-                                margin: "auto",
-                              }}
-                            >
-                              {itemR.rating ? (
-                                <p
+                            "{itemR.name}"
+                          </p>
+                          <p
+                            style={{
+                              display: "flex",
+                              width: "15%",
+                              margin: "auto",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {itemR?.opening_hours?.open_now ? (
+                              <HiOutlineLockOpen
+                                size={20}
+                                title="Working now"
+                                style={{ color: "darkgreen" }}
+                              />
+                            ) : (
+                              <HiOutlineLockClosed
+                                size={20}
+                                title="Not working now"
+                                style={{ color: "darkred" }}
+                              />
+                            )}
+                          </p>
+                          <p
+                            style={{
+                              display: "flex",
+                              width: "30%",
+                              justifyContent: "center",
+                              margin: "auto",
+                            }}
+                          >
+                            {itemR.rating ? (
+                              <p
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  margin: "auto",
+                                }}
+                              >
+                                {itemR.rating}
+                                <TiStarOutline
                                   style={{
                                     display: "flex",
                                     justifyContent: "center",
                                     margin: "auto",
+                                    color: "#d3b202",
                                   }}
-                                >
-                                  {itemR.rating}
-                                  <TiStarOutline
-                                    style={{
-                                      display: "flex",
-                                      justifyContent: "center",
-                                      margin: "auto",
-                                      color: "#d3b202",
-                                    }}
-                                    size={18}
-                                  />
-                                </p>
-                              ) : (
-                                "?"
-                              )}
-                            </p>
-                            <p
-                              style={{
-                                display: "flex",
-                                width: "10%",
-                                justifyContent: "center",
-                                margin: "auto",
-                              }}
-                            >
-                              {itemR.geometry.location.lat().toFixed(2)}
-                            </p>
-                            <p
-                              style={{
-                                display: "flex",
-                                width: "10%",
-                                justifyContent: "center",
-                                margin: "auto",
-                              }}
-                            >
-                              {itemR.geometry.location.lng().toFixed(2)}
-                            </p>
-                          </div>
-                        </>
-                      ))}
-                  </div>
-                  <div
+                                  size={18}
+                                />
+                              </p>
+                            ) : (
+                              "?"
+                            )}
+                          </p>
+                          <p
+                            style={{
+                              display: "flex",
+                              width: "10%",
+                              justifyContent: "center",
+                              margin: "auto",
+                            }}
+                          >
+                            {itemR.geometry.location.lat().toFixed(2)}
+                          </p>
+                          <p
+                            style={{
+                              display: "flex",
+                              width: "10%",
+                              justifyContent: "center",
+                              margin: "auto",
+                            }}
+                          >
+                            {itemR.geometry.location.lng().toFixed(2)}
+                          </p>
+                        </div>
+                      </>
+                    ))}
+                </div>
+                <div
+                  style={{
+                    backgroundColor: "rgb(255, 250, 226)",
+                    width: "100%",
+                    height: "10%",
+                  }}
+                >
+                  <HiOutlineArrowCircleUp
+                    size={30}
                     style={{
-                      backgroundColor: "rgb(255, 250, 226)",
-                      width: "100%",
-                      height: "10%",
+                      display: "flex",
+                      margin: "auto",
+                      color: "darkred",
                     }}
-                  >
-                    <HiOutlineArrowCircleUp
-                      size={30}
-                      style={{
-                        display: "flex",
-                        margin: "auto",
-                        color: "darkred",
-                      }}
-                    />
-                  </div>
+                  />
                 </div>
               </div>
-            ))}
+            </div>
+          ) : (
+            <p>dsdfsdfs</p>
+          )}
         </div>
+        {/* <div className="additional-table-list-container-content">
+          {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable] &&
+            allRoutePointsDescriptions[
+              choosenRouteMarkForAdditionalTable
+            ].additionalPoints[currentAddPointIdInList].map((itemA, i) => {
+              // console.log("ggg", itemA, "+++++++++", i);
+              {
+                currentAddPointIdInList == i ? (
+                  //  console.log("cccccc", currentAddPointIdInList, "+++++++++", i);
+                  <div style={{ paddingBottom: "5px" }}>
+                    <div
+                      id={`element-${itemA.additionalPointIdInList}`}
+                      className="additional-table-list-container-content-element"
+                      onClick={() =>
+                        showPopUpElement(itemA.additionalPointIdInList)
+                      }
+                    >
+                      <p style={{ paddingLeft: "10px", paddingTop: "10px" }}>
+                        Mark near point - {itemA.additionalPointIdInList}
+                      </p>
+                      <button
+                        style={{ display: "block", margin: "10px 10px" }}
+                        onClick={() =>
+                          //NEARBY MUSEUM
+                          searchNearbyRestaurants(i, {
+                            lat: itemA.additionalPointCoordX,
+                            lng: itemA.additionalPointCoordY,
+                          })
+                        }
+                      >
+                        <MdOutlineMuseum
+                          size={25}
+                          style={{ color: "darkred" }}
+                        />
+                      </button>
+                      <button
+                        style={{ display: "block", margin: "10px 10px" }}
+                        onClick={() =>
+                          //NEARBY GAS STATION
+                          searchNearbyGasStation(i, {
+                            lat: itemA.additionalPointCoordX,
+                            lng: itemA.additionalPointCoordY,
+                          })
+                        }
+                      >
+                        <MdLocalGasStation
+                          size={25}
+                          style={{ color: "darkred" }}
+                        />
+                      </button>
+                      <button
+                        style={{ display: "block", margin: "10px 10px" }}
+                        onClick={() =>
+                          searchNearbyMuseums(i, {
+                            lat: itemA.additionalPointCoordX,
+                            lng: itemA.additionalPointCoordY,
+                          })
+                        }
+                      >
+                        <RiRestaurantLine
+                          size={25}
+                          style={{ color: "darkred" }}
+                        />
+                      </button>
+                    </div>
+                    {/* OPENED */}
+        {/* <div
+                      id={`options-${itemA.additionalPointIdInList}`}
+                      className="additional-table-list-container-content-element-options"
+                      onClick={() =>
+                        hidePopUpElement(itemA.additionalPointIdInList)
+                      }
+                    >
+                      <div style={{ height: "85%", overflow: "auto" }}>
+                        {allPossibleLocationsForAdditionalPoint &&
+                          allPossibleLocationsForAdditionalPoint.map(
+                            (itemR, i) => (
+                              <>
+                                <div
+                                  id={i}
+                                  data-div-id={i}
+                                  className="single-options"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    saveChoosenPlaceToVisit(itemR, itemA, i);
+                                  }}
+                                >
+                                  <p
+                                    style={{
+                                      display: "flex",
+                                      width: "35%",
+                                      justifyContent: "center",
+                                      margin: "auto",
+                                    }}
+                                  >
+                                    "{itemR.name}"
+                                  </p>
+                                  <p
+                                    style={{
+                                      display: "flex",
+                                      width: "15%",
+                                      margin: "auto",
+                                      justifyContent: "center",
+                                    }}
+                                  >
+                                    {itemR?.opening_hours?.open_now ? (
+                                      <HiOutlineLockOpen
+                                        size={20}
+                                        title="Working now"
+                                        style={{ color: "darkgreen" }}
+                                      />
+                                    ) : (
+                                      <HiOutlineLockClosed
+                                        size={20}
+                                        title="Not working now"
+                                        style={{ color: "darkred" }}
+                                      />
+                                    )}
+                                  </p>
+                                  <p
+                                    style={{
+                                      display: "flex",
+                                      width: "30%",
+                                      justifyContent: "center",
+                                      margin: "auto",
+                                    }}
+                                  >
+                                    {itemR.rating ? (
+                                      <p
+                                        style={{
+                                          display: "flex",
+                                          justifyContent: "center",
+                                          margin: "auto",
+                                        }}
+                                      >
+                                        {itemR.rating}
+                                        <TiStarOutline
+                                          style={{
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            margin: "auto",
+                                            color: "#d3b202",
+                                          }}
+                                          size={18}
+                                        />
+                                      </p>
+                                    ) : (
+                                      "?"
+                                    )}
+                                  </p>
+                                  <p
+                                    style={{
+                                      display: "flex",
+                                      width: "10%",
+                                      justifyContent: "center",
+                                      margin: "auto",
+                                    }}
+                                  >
+                                    {itemR.geometry.location.lat().toFixed(2)}
+                                  </p>
+                                  <p
+                                    style={{
+                                      display: "flex",
+                                      width: "10%",
+                                      justifyContent: "center",
+                                      margin: "auto",
+                                    }}
+                                  >
+                                    {itemR.geometry.location.lng().toFixed(2)}
+                                  </p>
+                                </div>
+                              </>
+                            )
+                          )}
+                      </div>
+                      <div
+                        style={{
+                          backgroundColor: "rgb(255, 250, 226)",
+                          width: "100%",
+                          height: "10%",
+                        }}
+                      >
+                        <HiOutlineArrowCircleUp
+                          size={30}
+                          style={{
+                            display: "flex",
+                            margin: "auto",
+                            color: "darkred",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p>dsdfsdfs</p>
+                )
+              }
+            
+        </div> */}
 
         <div className="additional-table-list-container-bottom">
           <button id="hide-button" onClick={hideList}>
@@ -1342,7 +1720,7 @@ export default function PrivateRoutePreview(textas) {
             </GoogleMap>
           )}
           <div className="float-over-map">
-            {markerPosition && (
+            {markerPosition && !noMoreAdditionalPoints && (
               <>
                 <p>Latitude: {markerPosition.lat.toFixed(7)}</p>
                 <p>Longtitude: {markerPosition.lat.toFixed(7)}</p>
@@ -1352,6 +1730,20 @@ export default function PrivateRoutePreview(textas) {
                   onClick={() => handleSaveNewExtraCoords()}
                 />
               </>
+            )}
+            {noMoreAdditionalPoints && (
+              <div
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  backgroundColor: "rgba(255, 0, 0, 0.5)",
+                  borderRadius: "10px",
+                  textAlign: "center",
+                  fontSize: "16px",
+                }}
+              >
+                Maximum amount of additional points
+              </div>
             )}
           </div>
         </div>
@@ -1390,6 +1782,48 @@ export default function PrivateRoutePreview(textas) {
                 <p>Choose new points on the map</p>
               )}
             </div>
+            {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable] &&
+            allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
+              .additionalPoints[currentAddPointIdInList] ? (
+              <>
+                <div>
+                  <p>
+                    {/* {console.log(
+                  allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
+                    .additionalPoints[currentAddPointIdInList]
+                )} */}
+                    {
+                      allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointPlaceName
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p>
+                    {
+                      allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointPlaceRating
+                    }
+                  </p>
+                </div>
+                <p>More information: </p>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointPlaceRefToMaps,
+                  }}
+                ></div>
+              </>
+            ) : (
+              <p>No Content</p>
+            )}
             {additionalMarkerDescription && (
               <div>
                 <textarea
@@ -1414,7 +1848,7 @@ export default function PrivateRoutePreview(textas) {
             {additionalMarkersOnEdit &&
               additionalMarkersOnEdit.map((item, i) => (
                 <p key={i}>
-                  {item.lat} - {item.lng}
+                  {item.additionalPointCoordX} - {item.additionalPointCoordY}
                 </p>
               ))}
             {toggleAdditionalButton && (
@@ -1438,6 +1872,33 @@ export default function PrivateRoutePreview(textas) {
                   </button>
                 </div>
               )}
+            <div>
+              {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
+                .additionalPoints.length > 0 &&
+                currentAddPointIdInList != null && (
+                  <div
+                    style={{
+                      display: "flex",
+                      bottom: "0",
+
+                      justifyContent: "center",
+                    }}
+                  >
+                    <button
+                      style={{
+                        display: "flex",
+                        margin: "auto",
+                        borderRadius: "10px",
+                        border: "2px solid darkred",
+                        backgroundColor: "red",
+                      }}
+                      onClick={removeAdditionalPoint}
+                    >
+                      Delete point
+                    </button>
+                  </div>
+                )}
+            </div>
           </div>
         )}
       </div>

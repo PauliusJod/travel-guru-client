@@ -45,7 +45,7 @@ export default function MapsGallery() {
                   alt={oneRoute.routeId}
                   width="200"
                   height="200"
-                  style={{ objectFit: "cover" }}
+                  style={{ objectFit: "cover", cursor: "pointer" }}
                   onClick={() => handleClick(oneRoute)}
                 ></img>
                 <p style={{ fontSize: "24px", margin: "5px" }}>
@@ -60,7 +60,7 @@ export default function MapsGallery() {
                   alt={oneRoute.routeId}
                   width="200"
                   height="200"
-                  style={{ objectFit: "cover" }}
+                  style={{ objectFit: "cover", cursor: "pointer" }}
                   onClick={() => handleClick(oneRoute)}
                 ></img>
                 <p style={{ fontSize: "24px", margin: "5px" }}>

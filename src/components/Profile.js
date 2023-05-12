@@ -126,7 +126,6 @@ export default function Profile() {
             <div className="grid-container">
               {allUserCreatedRoutes.map((oneUserCreatedRoute) => (
                 <div key={oneUserCreatedRoute.routeId}>
-                  {console.log(oneUserCreatedRoute)}
                   {oneUserCreatedRoute.rImagesUrl != null &&
                   oneUserCreatedRoute.rImagesUrl != undefined ? (
                     <div>
@@ -136,7 +135,7 @@ export default function Profile() {
                         alt={oneUserCreatedRoute.routeId}
                         width="150"
                         height="150"
-                        style={{ objectFit: "cover" }}
+                        style={{ objectFit: "cover", cursor: "pointer" }}
                         onClick={() => handleClick(oneUserCreatedRoute)}
                       ></img>
                       <p style={{ fontSize: "20px", margin: "5px" }}>
@@ -151,7 +150,7 @@ export default function Profile() {
                         alt={oneUserCreatedRoute.routeId}
                         width="150"
                         height="150"
-                        style={{ objectFit: "cover" }}
+                        style={{ objectFit: "cover", cursor: "pointer" }}
                         onClick={() => handleClick(oneUserCreatedRoute)}
                       ></img>
                       <p style={{ fontSize: "20px", margin: "5px" }}>
