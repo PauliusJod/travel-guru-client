@@ -414,12 +414,13 @@ export default function CreateMap() {
     });
     const exportData = {
       origin: originRef.current.value,
-      midWaypoints: fixedWaypoints,
+      midWaypoints: waypointsForDB, //fixedWaypoints,
       destiantion: destiantionRef.current.value,
     };
     if (routeNameValue.length <= 0) {
       alert("Route title not saved");
     }
+    console.log("midway:", exportData.midWaypoints);
     axios
       .post(
         "http://localhost:5113/api/troutes",
