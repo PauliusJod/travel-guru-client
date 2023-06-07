@@ -9,7 +9,6 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./PreviewTripMap.css";
 import { SkeletonText } from "@chakra-ui/react";
-
 import jwt_decode from "jwt-decode";
 import { CgProfile } from "react-icons/cg";
 import {
@@ -480,75 +479,81 @@ export default function PreviewTripMap() {
               </>
             ))}
           </div>
-          <textarea
-            placeholder="There is no content!"
-            value={pointDescriptionValue}
-          />
-          <div
-            style={{
-              position: "absolute",
-              bottom: "0px",
-              textAlign: "center",
-              width: "100%",
-            }}
-          >
-            <h3>Recommendations</h3>
-            {allRecommendationsUrlsForRoute && (
-              <div
-                style={{
-                  display: "block",
-
-                  border: "1px solid white",
-                  width: "80%",
-                  borderRadius: "10px",
-                  backgroundColor: "rgba(255,255,255,0.4)",
-                  boxShadow: "inset 2px 0px 5px #f5e384",
-                  maxHeight:
-                    allRecommendationsUrlsForRoute.length > 4
-                      ? "120px"
-                      : "none",
-                  overflowY:
-                    allRecommendationsUrlsForRoute.length > 4
-                      ? "scroll"
-                      : "none",
-                  margin:
-                    allRecommendationsUrlsForRoute.length > 4
-                      ? "0px auto"
-                      : "0px auto",
-                }}
-              >
-                {allRecommendationsUrlsForRoute.map((recommendation, i) => (
-                  <div
-                    style={{
-                      display: "flex",
-                      width: "70%",
-                      margin: "0px auto",
-                      justifyContent: "space-between",
-                    }}
-                    key={i}
-                  >
-                    <p
-                      style={{
-                        margin: "0px 0px 4px",
-                        maxWidth:
-                          recommendation.rRecommendationUrlLink.length > 30
-                            ? "250px"
-                            : "none",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                      title={recommendation.rRecommendationUrlLink}
-                      alt={`Recommendation ${i}`}
-                    >
-                      {recommendation.rRecommendationUrlLink}
-                    </p>
-                  </div>
-                ))}
-              </div>
+          {pointDescriptionValue != null &&
+            pointDescriptionValue.length > 0 && (
+              <textarea
+                placeholder="There is no content!"
+                value={pointDescriptionValue}
+              />
             )}
-            <p></p>
-          </div>
+          {allRecommendationsUrlsForRoute.length > 0 && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: "0px",
+                textAlign: "center",
+                width: "100%",
+              }}
+            >
+              <h3>Recommendations</h3>
+              {allRecommendationsUrlsForRoute && (
+                <div
+                  style={{
+                    display: "block",
+
+                    border: "1px solid white",
+                    width: "80%",
+                    borderRadius: "10px",
+                    backgroundColor: "rgba(255,255,255,0.4)",
+                    boxShadow: "inset 2px 0px 5px #f5e384",
+                    maxHeight:
+                      allRecommendationsUrlsForRoute.length > 4
+                        ? "120px"
+                        : "none",
+                    overflowY:
+                      allRecommendationsUrlsForRoute.length > 4
+                        ? "scroll"
+                        : "none",
+                    margin:
+                      allRecommendationsUrlsForRoute.length > 4
+                        ? "0px auto"
+                        : "0px auto",
+                  }}
+                >
+                  {allRecommendationsUrlsForRoute.map((recommendation, i) => (
+                    <div
+                      style={{
+                        display: "flex",
+                        width: "70%",
+                        margin: "0px auto",
+                        justifyContent: "space-between",
+                      }}
+                      key={i}
+                    >
+                      <p
+                        style={{
+                          margin: "0px 0px 4px",
+                          maxWidth:
+                            recommendation.rRecommendationUrlLink.length > 30
+                              ? "250px"
+                              : "none",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                        title={recommendation.rRecommendationUrlLink}
+                        alt={`Recommendation ${i}`}
+                      >
+                        {recommendation.rRecommendationUrlLink}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p></p>
+            </div>
+          )}
         </div>
         <div className="view-container-main-right">
           {isPageContentLoaded && (
@@ -649,7 +654,9 @@ export default function PreviewTripMap() {
                       justifyContent: "space-between",
                     }}
                   >
-                    <p>Place title</p>
+                    <p style={{ fontWeight: "bold", textAlign: "left" }}>
+                      Place title
+                    </p>
                     <p>{choosenAdditionalMark.additionalPointPlaceName}</p>
                   </div>
                 )}
@@ -662,7 +669,9 @@ export default function PreviewTripMap() {
                       justifyContent: "space-between",
                     }}
                   >
-                    <p>Place rating</p>
+                    <p style={{ fontWeight: "bold", textAlign: "left" }}>
+                      Place rating
+                    </p>
                     <p style={{ textAlign: "end" }}>
                       {choosenAdditionalMark.additionalPointPlaceRating}
                     </p>
@@ -676,7 +685,9 @@ export default function PreviewTripMap() {
                       justifyContent: "space-between",
                     }}
                   >
-                    <p>More information: </p>
+                    <p style={{ fontWeight: "bold", textAlign: "left" }}>
+                      More information:{" "}
+                    </p>
                     <div
                       dangerouslySetInnerHTML={{
                         __html:
@@ -697,6 +708,7 @@ export default function PreviewTripMap() {
               placeholder="There is no content!"
               defaultValue={""}
               onChange={handleAdditionalMarkerDescription}
+              disabled
             ></textarea>
           </div>
         </div>

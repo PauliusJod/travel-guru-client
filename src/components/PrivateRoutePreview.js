@@ -26,6 +26,8 @@ import {
   HiOutlineLockClosed,
   HiOutlineShoppingCart,
 } from "react-icons/hi";
+
+import { GrCircleInformation } from "react-icons/gr";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -664,6 +666,7 @@ export default function PrivateRoutePreview(textas) {
           console.log(error);
         });
     } else {
+      alert("Choose any point to delete");
       console.log("Can't delete. Try later");
     }
   };
@@ -885,7 +888,7 @@ export default function PrivateRoutePreview(textas) {
       {
         location: pointLocation,
         radius: 1000,
-        type: ["police", "hospital", "bank"],
+        type: ["hospital"],
         business_status: "OPERATIONAL",
       },
       (results, status) => {
@@ -1309,7 +1312,9 @@ export default function PrivateRoutePreview(textas) {
         </div>
       </div>
       <div className="publish-button">
-        <button onClick={SaveAllChangesToDB}>Save changes</button>
+        <button style={{ display: "none" }} onClick={SaveAllChangesToDB}>
+          Save changes
+        </button>
         {location.state.message.rIsPublished ? (
           <button onClick={unpublishRoute}>Unpublish</button>
         ) : (
@@ -1383,7 +1388,13 @@ export default function PrivateRoutePreview(textas) {
             }}
           >
             {/* TODO */}
-            <h3>Recommendations</h3>
+            <h3>
+              Recommendations{" "}
+              <GrCircleInformation
+                size={20}
+                title="Optional recommendations links"
+              />
+            </h3>
             {allRecommendationsUrlsForRoute && (
               <div
                 style={{
@@ -1582,11 +1593,34 @@ export default function PrivateRoutePreview(textas) {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    margin: "2px 15%",
+                    margin: "2px 10%",
                   }}
                 >
-                  <p>Place title: </p>
-                  <p>
+                  <p style={{ textAlign: "left" }}>Place title: </p>
+                  <p
+                    style={{
+                      maxWidth:
+                        allRoutePointsDescriptions[
+                          choosenRouteMarkForAdditionalTable
+                        ].additionalPoints[currentAddPointIdInList]
+                          .additionalPointPlaceName != null &&
+                        allRoutePointsDescriptions[
+                          choosenRouteMarkForAdditionalTable
+                        ].additionalPoints[currentAddPointIdInList]
+                          .additionalPointPlaceName.length > 30
+                          ? "170px"
+                          : "none",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                    title={
+                      allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointPlaceName
+                    }
+                  >
                     {
                       allRoutePointsDescriptions[
                         choosenRouteMarkForAdditionalTable
@@ -1599,10 +1633,10 @@ export default function PrivateRoutePreview(textas) {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    margin: "2px 15%",
+                    margin: "2px 10%",
                   }}
                 >
-                  <p>Rating: </p>
+                  <p style={{ textAlign: "left" }}>Rating: </p>
                   <p>
                     {
                       allRoutePointsDescriptions[
@@ -1619,12 +1653,24 @@ export default function PrivateRoutePreview(textas) {
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
-                      margin: "2px 15%",
+                      margin: "2px 10%",
                     }}
                   >
-                    <p>More information: </p>
+                    <p style={{ textAlign: "left" }}>More information: </p>
                     <div
-                      style={{ margin: "4px" }}
+                      style={{
+                        margin: "4px",
+                        maxWidth:
+                          allRoutePointsDescriptions[
+                            choosenRouteMarkForAdditionalTable
+                          ].additionalPoints[currentAddPointIdInList]
+                            .additionalPointPlaceRefToMaps.length > 30
+                            ? "170px"
+                            : "none",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
                       dangerouslySetInnerHTML={{
                         __html:
                           allRoutePointsDescriptions[
@@ -1632,6 +1678,12 @@ export default function PrivateRoutePreview(textas) {
                           ].additionalPoints[currentAddPointIdInList]
                             .additionalPointPlaceRefToMaps,
                       }}
+                      title={
+                        allRoutePointsDescriptions[
+                          choosenRouteMarkForAdditionalTable
+                        ].additionalPoints[currentAddPointIdInList]
+                          .additionalPointPlaceRefToMaps
+                      }
                     ></div>
                   </div>
                 )}
@@ -1641,23 +1693,31 @@ export default function PrivateRoutePreview(textas) {
             )}
             {additionalMarkerDescription && (
               <div>
-                <textarea
-                  style={{ width: "80%", margin: "auto" }}
-                  id="add-m-d"
-                  rows="4"
-                  cols="50"
-                  placeholder="There is no content!"
-                  value={additionalMarkerDescriptionDisplay}
-                  onChange={handleAdditionalMarkerDescription}
-                ></textarea>
-                <div className="preview-page-save-button">
-                  <button
-                    className="preview-page-save-button"
-                    onClick={saveAdditionalPointDescriptionTextToLocal}
-                  >
-                    Save additional description
-                  </button>
-                </div>
+                {allRoutePointsDescriptions[
+                  choosenRouteMarkForAdditionalTable
+                ] != null &&
+                  allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
+                    .additionalPoints.length > 0 && (
+                    <>
+                      <textarea
+                        style={{ width: "80%", margin: "auto" }}
+                        id="add-m-d"
+                        rows="4"
+                        cols="50"
+                        placeholder="There is no content!"
+                        value={additionalMarkerDescriptionDisplay}
+                        onChange={handleAdditionalMarkerDescription}
+                      ></textarea>
+                      <div className="preview-page-save-button">
+                        <button
+                          className="preview-page-save-button"
+                          onClick={saveAdditionalPointDescriptionTextToLocal}
+                        >
+                          Save additional description
+                        </button>
+                      </div>
+                    </>
+                  )}
               </div>
             )}
             {additionalMarkersOnEdit &&
