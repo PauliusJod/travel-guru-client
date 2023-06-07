@@ -84,7 +84,7 @@ export class NavMenu extends Component {
                 fill="#02C652"
               />
             </svg>
-            <p className="testas">Travel Guru</p>
+            <p className="testas">Travel Guide</p>
           </NavbarBrand>
           {user ? (
             //<NavbarToggler onClick={this.toggleNavbar} className="mr-2" />

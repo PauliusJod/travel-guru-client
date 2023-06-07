@@ -119,7 +119,7 @@ class Login extends Component {
                   <div className="form-group">
                     <label htmlFor="password">Password</label>
                     <Input
-                      type="text" // password
+                      type="password" // password
                       className="form-control"
                       name="password"
                       value={this.state.password}
