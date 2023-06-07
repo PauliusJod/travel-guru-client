@@ -5,21 +5,10 @@ import {
   useJsApiLoader,
   GoogleMap,
   Marker,
-  Autocomplete,
   DirectionsRenderer,
-  // placesService,
-  InfoWindow,
-  Geocoder,
 } from "@react-google-maps/api";
 
-import {
-  Button,
-  ButtonGroup,
-  IconButton,
-  SkeletonText,
-  Textarea,
-  border,
-} from "@chakra-ui/react";
+import { SkeletonText } from "@chakra-ui/react";
 
 import { GiCheckMark } from "react-icons/gi";
 import { TiStarOutline } from "react-icons/ti";
@@ -29,13 +18,14 @@ import {
   MdDataSaverOn,
   MdOutlineMuseum,
   MdLocalGasStation,
+  MdOutlineMedicalServices,
 } from "react-icons/md";
 import {
   HiOutlineArrowCircleUp,
   HiOutlineLockOpen,
   HiOutlineLockClosed,
+  HiOutlineShoppingCart,
 } from "react-icons/hi";
-import { TbHandClick } from "react-icons/tb";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -45,8 +35,9 @@ import "./PrivateRoutePreview.css";
 export default function PrivateRoutePreview(textas) {
   const centerPoint = { lat: 54.8985, lng: 23.9036 };
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyAmOOpkKLPbXQ4TnZYJ3xNw868ySAaoylA", // "AIzaSyClg0_pq0WTqIRVmRI10U2pQPZv7f5dQXQ", // "AIzaSyAiB_hv59Hb5MQol934V0jK-t9CVbc2JGY", //AIzaSyClg0_pq0WTqIRVmRI10U2pQPZv7f5dQXQ //process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey: "AIzaSyAmOOpkKLPbXQ4TnZYJ3xNw868ySAaoylA",
     libraries: ["geometry", "places"],
+    utcOffset: -240,
   });
   const google = window.google;
   const [map, setMap] = React.useState(null);
@@ -59,9 +50,7 @@ export default function PrivateRoutePreview(textas) {
   const [isPageContentLoaded, setIsPageContentLoaded] = useState(false);
   const [directionsRendererKey, setDirectionsRendererKey] = useState(1);
 
-  //SET on AXIOS GET
   const [allRouteMidWaypoints, setAllRouteMidWaypoints] = useState(null);
-  // const [allRouteSectionsDescriptions, setAllRouteSectionsDescriptions] = useState(null);
   const [allRoutePointsDescriptions, setAllRoutePointsDescriptions] = useState(
     []
   );
@@ -69,27 +58,18 @@ export default function PrivateRoutePreview(textas) {
   const [allImagesUrlsForRoute, setAllImagesUrlsForRoute] = useState([]);
   const [allRecommendationsUrlsForRoute, setAllRecommendationsUrlsForRoute] =
     useState([]);
-  //SET on AXIOS GET -----------------------------------------------------------------------
-  //SET local handlers+++++++++++++++++++++++++++++++
   const [newRecommendationTextURL, setNewRecommendationTextURL] = useState("");
   const [newRoutePointTextChanges, setNewRoutePointTextChanges] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [isValidImageUrl, setIsValidImageUrl] = useState(false);
-  //SET local handlers+++++++++++++++++++++++++++++++
-  //set ids
 
   const [currentAddPointIdInList, setCurrentAddPointIdInList] = useState(0);
   const [currentPointId, setCurrentPointId] = useState(0);
-  //set ids
-  // ERROR HANDLERS
-
   const [noMoreAdditionalPoints, setNoMoreAdditionalPoints] = useState(false);
-  // ERROR HANDLERS--------------------------
 
   const [pointDescriptionValue, setPointDescriptionValue] = useState(null);
 
   const [allMapPlaces, setAllMapPlaces] = useState([]);
-  //---click on map setPointIdIsEditing
   const [markerPosition, setMarkerPosition] = useState(null);
   const [additionalMarkerDescription, setAdditionalMarkerDescription] =
     useState("");
@@ -99,25 +79,23 @@ export default function PrivateRoutePreview(textas) {
   ] = useState("");
   const [toggleAdditionalButton, setToggleAdditionalButton] = useState(false);
   const [pointIdIsEditing, setPointIdIsEditing] = useState(null);
-  const [additionalMarkersOnEdit, setAdditionalMarkersOnEdit] = useState([]); // visi sitie i setAllAdditionalMarkersOnEdit
+  const [additionalMarkersOnEdit, setAdditionalMarkersOnEdit] = useState([]);
   const [allAdditionalMarkersOnEdit, setAllAdditionalMarkersOnEdit] = useState(
     Array.from({ length: 10 })
-  ); // array is setAdditionalMarkersOnEdit
+  );
   const [allAdditionalMarkersForDB, setAllAdditionalMarkersForDB] = useState(
     []
-  ); // DB
-  //
-  //
+  );
   const [
     allPossibleLocationsForAdditionalPoint,
     setAllPossibleLocationsForAdditionalPoint,
   ] = useState([]);
-  //
+
   const [
     choosenRouteMarkForAdditionalTable,
     setChoosenRouteMarkForAdditionalTable,
   ] = useState(null);
-  //----
+
   const settings = {
     dots: true,
     dotsClass: "slick-dots",
@@ -133,11 +111,6 @@ export default function PrivateRoutePreview(textas) {
     slide: "div",
   };
 
-  /*
-  allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
-              .additionalPoints
-              editint reikia atskirai su db po sito saraso update'o
-  */
   const [error, setError] = useState(null);
   const [rerenderPage, setRerenderPage] = useState(0);
   useEffect(() => {
@@ -195,8 +168,6 @@ export default function PrivateRoutePreview(textas) {
           if (item.current === null) {
             return item;
           } else {
-            // let additionalPoints = [];
-            // additionalPoints = [...item.AddinionalPointMarks];
             let additionalPoints =
               item.addinionalPointMarks !== undefined
                 ? [...item.addinionalPointMarks]
@@ -384,7 +355,6 @@ export default function PrivateRoutePreview(textas) {
         reloadDirectionsRenderer();
       }
     } catch (error) {
-      // console.log(error);
       setError("Failed to load.");
     }
   }
@@ -420,25 +390,7 @@ export default function PrivateRoutePreview(textas) {
       lng: event.latLng.lng(),
     });
   };
-  // const handleSaveNewExtraCoords = (event) => {
-  //   if (
-  //     additionalMarkersOnEdit.length === 5 ||
-  //     additionalMarkersOnEdit.length > 5
-  //   ) {
-  //   } else if (additionalMarkersOnEdit.length < 5) {
-  //     setAdditionalMarkersOnEdit((prevPositions) => [
-  //       ...prevPositions,
-  //       {
-  //         pointId: pointIdIsEditing,
-  //         additionalPointInformation: "",
-  //         additionalPointCoordX: markerPosition.lat,
-  //         additionalPointCoordY: markerPosition.lng,
-  //       },
-  //     ]);
-  //     setMarkerPosition(null);
-  //     setToggleAdditionalButton(true);
-  //   }
-  // };
+
   const handleSaveNewExtraCoords = (event) => {
     console.log(
       "aaa",
@@ -454,7 +406,6 @@ export default function PrivateRoutePreview(textas) {
     if (additionalPoints.length === 5 || additionalPoints.length > 5) {
       setNoMoreAdditionalPoints(true);
     } else if (additionalPoints.length < 5) {
-      //allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable].additionalPoints.length addpoint in list
       axios
         .post(
           "http://localhost:5113/api/troutes/" +
@@ -480,7 +431,6 @@ export default function PrivateRoutePreview(textas) {
         });
 
       setMarkerPosition(null);
-      // setToggleAdditionalButton(true);
     }
     console.log(
       "end of method:",
@@ -529,7 +479,7 @@ export default function PrivateRoutePreview(textas) {
             }
           )
           .then((response) => {
-            const item = response.data; // Assuming the response data is an array with one item
+            const item = response.data;
             if (item !== null) {
               setAllRecommendationsUrlsForRoute((prevArray) => {
                 const updatedArray = [...prevArray];
@@ -565,7 +515,7 @@ export default function PrivateRoutePreview(textas) {
             { headers }
           )
           .then((response) => {
-            const item = response.data; // Assuming the response data is an array with one item
+            const item = response.data;
             if (item !== null) {
               setRerenderPage(rerenderPage + 1);
               setAllImagesUrlsForRoute((prevArray) => {
@@ -660,30 +610,7 @@ export default function PrivateRoutePreview(textas) {
     const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
     return urlRegex.test(url);
   };
-  const saveAddPointDescriptionTextToDB = (event) => {
-    var routeIdLocal = location.state.message.routeId;
-    var pointRouteIdLocal = pointIdIsEditing;
-    var pointDescriptionTextLocal = newRoutePointTextChanges;
-    axios
-      .put(
-        "http://localhost:5113/api/troutes/" +
-          routeIdLocal +
-          "/routepoints/" +
-          pointRouteIdLocal,
-        {
-          pointId: pointRouteIdLocal,
-          routePointDescription: pointDescriptionTextLocal,
-          routeId: routeIdLocal,
-        }
-      )
-      .then((response) => {
-        allRoutePointsDescriptions[
-          response.data.pointOnRouteId
-        ].routePointDescription = pointDescriptionTextLocal;
-        return response.data;
-      })
-      .catch((err) => console.log("err", err));
-  };
+
   const targetExtraPointOnMap = (item, id) => () => {
     const centerPoint = {
       lat: item.additionalPointCoordX,
@@ -719,8 +646,6 @@ export default function PrivateRoutePreview(textas) {
     );
 
     if (foundPoint) {
-      console.log("Found point:", foundPoint);
-      //remove troutes/{trouteId}/point/{pointId}/removeadditional/{pointInListId}
       axios
         .delete(
           "http://localhost:5113/api/troutes/" +
@@ -762,13 +687,11 @@ export default function PrivateRoutePreview(textas) {
     setAdditionalMarkersOnEdit([]);
   };
 
-  // TODO SAVE AFTER CLICKS ON MAP
   const saveAdditionalMarkers = () => {
     setAllAdditionalMarkersOnEdit((prevArray) => {
       if (
         allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] != null
       ) {
-        // setToggleAdditionalButton(false);
         const updatedArray = [...prevArray];
         updatedArray[choosenRouteMarkForAdditionalTable] =
           additionalMarkersOnEdit;
@@ -777,7 +700,6 @@ export default function PrivateRoutePreview(textas) {
         allAdditionalMarkersOnEdit[choosenRouteMarkForAdditionalTable] ===
         undefined
       ) {
-        // setToggleAdditionalButton(false);
         const updatedArray = [...prevArray];
         updatedArray[choosenRouteMarkForAdditionalTable] =
           additionalMarkersOnEdit;
@@ -811,39 +733,6 @@ export default function PrivateRoutePreview(textas) {
 
     setAllRecommendationsUrlsForRoute(newArray);
   };
-  // const SaveAllChangesToDB = () => {
-  //   if (!allAdditionalMarkersOnEdit) {
-  //     console.log("allAdditionalMarkersOnEdit is undefined or null");
-  //     return;
-  //   }
-  //   const extra = allAdditionalMarkersOnEdit.map((item, index) =>
-  //     item
-  //       ? item.map((itemB, j) => {
-  //           if (!itemB) {
-  //             return null;
-  //           }
-  //           return {
-  //             additionalPointRouteId: location.state.message.routeId,
-  //             additionalPointIdInList: j,
-  //             additionalPointCoordX: itemB.additionalPointCoordX,
-  //             additionalPointCoordY: itemB.additionalPointCoordY,
-  //             additionalPointInformation: itemB.additionalPointInformation,
-
-  //             additionalPointPlaceId: itemB.additionalPointPlaceId,
-  //             additionalPointPlaceName: itemB.additionalPointPlaceName,
-  //             additionalPointPlaceRating: itemB.additionalPointPlaceRating,
-  //             additionalPointPlaceRefToMaps:
-  //               itemB.additionalPointPlaceRefToMaps,
-  //             additionalPointPlaceType: itemB.additionalPointPlaceType,
-
-  //             TroutePointDescriptionpointId: itemB.pointId,
-  //           };
-  //         })
-  //       : []
-  //   );
-  //   setAllAdditionalMarkersForDB(extra);
-  //   setRerenderPage(rerenderPage + 1);
-  // };
   const SaveAllChangesToDB = () => {
     console.log(
       allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
@@ -951,6 +840,57 @@ export default function PrivateRoutePreview(textas) {
       (results, status) => {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
           setAllPossibleLocationsForAdditionalPoint(results);
+
+          results.forEach((place) => {
+            placesService.getDetails(
+              {
+                placeId: place.place_id,
+                fields: ["opening_hours"],
+              },
+              (details, detailsStatus) => {
+                if (
+                  detailsStatus ===
+                  window.google.maps.places.PlacesServiceStatus.OK
+                ) {
+                  const isOpen = details.opening_hours?.isOpen();
+                  console.log(`Place ${place.place_id} is open: ${isOpen}`);
+                }
+              }
+            );
+          });
+        }
+      }
+    );
+  }
+
+  function searchNearbyShopping(pointLocation) {
+    const placesService = new window.google.maps.places.PlacesService(map);
+    placesService.nearbySearch(
+      {
+        location: pointLocation,
+        radius: 1000,
+        type: ["shopping_mall", "store"],
+        business_status: "OPERATIONAL",
+      },
+      (results, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+          setAllPossibleLocationsForAdditionalPoint(results);
+        }
+      }
+    );
+  }
+  function searchNearbyServices(pointLocation) {
+    const placesService = new window.google.maps.places.PlacesService(map);
+    placesService.nearbySearch(
+      {
+        location: pointLocation,
+        radius: 1000,
+        type: ["police", "hospital", "bank"],
+        business_status: "OPERATIONAL",
+      },
+      (results, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+          setAllPossibleLocationsForAdditionalPoint(results);
         }
       }
     );
@@ -965,10 +905,9 @@ export default function PrivateRoutePreview(textas) {
         type: [
           "museum",
           "park",
-          "art_gallery",
-          "city_hall",
           "tourist_attraction",
           "point_of_interest",
+          "art_gallery",
         ],
         business_status: "OPERATIONAL",
       },
@@ -1050,6 +989,7 @@ export default function PrivateRoutePreview(textas) {
       )
       .then((response) => {
         setRerenderPage(rerenderPage + 1);
+        hideList();
         return response.data;
       })
       .catch((err) => console.log("err", err));
@@ -1141,7 +1081,49 @@ export default function PrivateRoutePreview(textas) {
                     })
                   }
                 >
-                  <MdOutlineMuseum size={25} style={{ color: "darkred" }} />
+                  <RiRestaurantLine size={25} style={{ color: "darkred" }} />
+                </button>
+                <button
+                  style={{ display: "block", margin: "10px 10px" }}
+                  onClick={() =>
+                    //NEARBY shopping mall, stores
+                    searchNearbyShopping({
+                      lat: allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointCoordX,
+                      lng: allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointCoordY,
+                    })
+                  }
+                >
+                  <HiOutlineShoppingCart
+                    size={25}
+                    style={{ color: "darkred" }}
+                  />
+                </button>
+                <button
+                  style={{ display: "block", margin: "10px 10px" }}
+                  onClick={() =>
+                    //NEARBY services
+                    searchNearbyServices({
+                      lat: allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointCoordX,
+                      lng: allRoutePointsDescriptions[
+                        choosenRouteMarkForAdditionalTable
+                      ].additionalPoints[currentAddPointIdInList]
+                        .additionalPointCoordY,
+                    })
+                  }
+                >
+                  <MdOutlineMedicalServices
+                    size={25}
+                    style={{ color: "darkred" }}
+                  />
                 </button>
                 <button
                   style={{ display: "block", margin: "10px 10px" }}
@@ -1176,7 +1158,7 @@ export default function PrivateRoutePreview(textas) {
                     })
                   }
                 >
-                  <RiRestaurantLine size={25} style={{ color: "darkred" }} />
+                  <MdOutlineMuseum size={25} style={{ color: "darkred" }} />
                 </button>
               </div>
               {/* OPENED */}
@@ -1317,212 +1299,12 @@ export default function PrivateRoutePreview(textas) {
               </div>
             </div>
           ) : (
-            <p>dsdfsdfs</p>
+            <p></p>
           )}
         </div>
-        {/* <div className="additional-table-list-container-content">
-          {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable] &&
-            allRoutePointsDescriptions[
-              choosenRouteMarkForAdditionalTable
-            ].additionalPoints[currentAddPointIdInList].map((itemA, i) => {
-              // console.log("ggg", itemA, "+++++++++", i);
-              {
-                currentAddPointIdInList == i ? (
-                  //  console.log("cccccc", currentAddPointIdInList, "+++++++++", i);
-                  <div style={{ paddingBottom: "5px" }}>
-                    <div
-                      id={`element-${itemA.additionalPointIdInList}`}
-                      className="additional-table-list-container-content-element"
-                      onClick={() =>
-                        showPopUpElement(itemA.additionalPointIdInList)
-                      }
-                    >
-                      <p style={{ paddingLeft: "10px", paddingTop: "10px" }}>
-                        Mark near point - {itemA.additionalPointIdInList}
-                      </p>
-                      <button
-                        style={{ display: "block", margin: "10px 10px" }}
-                        onClick={() =>
-                          //NEARBY MUSEUM
-                          searchNearbyRestaurants(i, {
-                            lat: itemA.additionalPointCoordX,
-                            lng: itemA.additionalPointCoordY,
-                          })
-                        }
-                      >
-                        <MdOutlineMuseum
-                          size={25}
-                          style={{ color: "darkred" }}
-                        />
-                      </button>
-                      <button
-                        style={{ display: "block", margin: "10px 10px" }}
-                        onClick={() =>
-                          //NEARBY GAS STATION
-                          searchNearbyGasStation(i, {
-                            lat: itemA.additionalPointCoordX,
-                            lng: itemA.additionalPointCoordY,
-                          })
-                        }
-                      >
-                        <MdLocalGasStation
-                          size={25}
-                          style={{ color: "darkred" }}
-                        />
-                      </button>
-                      <button
-                        style={{ display: "block", margin: "10px 10px" }}
-                        onClick={() =>
-                          searchNearbyMuseums(i, {
-                            lat: itemA.additionalPointCoordX,
-                            lng: itemA.additionalPointCoordY,
-                          })
-                        }
-                      >
-                        <RiRestaurantLine
-                          size={25}
-                          style={{ color: "darkred" }}
-                        />
-                      </button>
-                    </div>
-                    {/* OPENED */}
-        {/* <div
-                      id={`options-${itemA.additionalPointIdInList}`}
-                      className="additional-table-list-container-content-element-options"
-                      onClick={() =>
-                        hidePopUpElement(itemA.additionalPointIdInList)
-                      }
-                    >
-                      <div style={{ height: "85%", overflow: "auto" }}>
-                        {allPossibleLocationsForAdditionalPoint &&
-                          allPossibleLocationsForAdditionalPoint.map(
-                            (itemR, i) => (
-                              <>
-                                <div
-                                  id={i}
-                                  data-div-id={i}
-                                  className="single-options"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    saveChoosenPlaceToVisit(itemR, itemA, i);
-                                  }}
-                                >
-                                  <p
-                                    style={{
-                                      display: "flex",
-                                      width: "35%",
-                                      justifyContent: "center",
-                                      margin: "auto",
-                                    }}
-                                  >
-                                    "{itemR.name}"
-                                  </p>
-                                  <p
-                                    style={{
-                                      display: "flex",
-                                      width: "15%",
-                                      margin: "auto",
-                                      justifyContent: "center",
-                                    }}
-                                  >
-                                    {itemR?.opening_hours?.open_now ? (
-                                      <HiOutlineLockOpen
-                                        size={20}
-                                        title="Working now"
-                                        style={{ color: "darkgreen" }}
-                                      />
-                                    ) : (
-                                      <HiOutlineLockClosed
-                                        size={20}
-                                        title="Not working now"
-                                        style={{ color: "darkred" }}
-                                      />
-                                    )}
-                                  </p>
-                                  <p
-                                    style={{
-                                      display: "flex",
-                                      width: "30%",
-                                      justifyContent: "center",
-                                      margin: "auto",
-                                    }}
-                                  >
-                                    {itemR.rating ? (
-                                      <p
-                                        style={{
-                                          display: "flex",
-                                          justifyContent: "center",
-                                          margin: "auto",
-                                        }}
-                                      >
-                                        {itemR.rating}
-                                        <TiStarOutline
-                                          style={{
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            margin: "auto",
-                                            color: "#d3b202",
-                                          }}
-                                          size={18}
-                                        />
-                                      </p>
-                                    ) : (
-                                      "?"
-                                    )}
-                                  </p>
-                                  <p
-                                    style={{
-                                      display: "flex",
-                                      width: "10%",
-                                      justifyContent: "center",
-                                      margin: "auto",
-                                    }}
-                                  >
-                                    {itemR.geometry.location.lat().toFixed(2)}
-                                  </p>
-                                  <p
-                                    style={{
-                                      display: "flex",
-                                      width: "10%",
-                                      justifyContent: "center",
-                                      margin: "auto",
-                                    }}
-                                  >
-                                    {itemR.geometry.location.lng().toFixed(2)}
-                                  </p>
-                                </div>
-                              </>
-                            )
-                          )}
-                      </div>
-                      <div
-                        style={{
-                          backgroundColor: "rgb(255, 250, 226)",
-                          width: "100%",
-                          height: "10%",
-                        }}
-                      >
-                        <HiOutlineArrowCircleUp
-                          size={30}
-                          style={{
-                            display: "flex",
-                            margin: "auto",
-                            color: "darkred",
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <p>dsdfsdfs</p>
-                )
-              }
-            
-        </div> */}
-
         <div className="additional-table-list-container-bottom">
           <button id="hide-button" onClick={hideList}>
-            Hide
+            Close menu
           </button>
         </div>
       </div>
@@ -1754,7 +1536,6 @@ export default function PrivateRoutePreview(textas) {
           >
             <div className="private-container-main-left top">
               <h3>Points manager</h3>
-              {/* <h1>{location.state.message.rCountry}</h1> */}
             </div>
             <div className="private-container-main-left buttons">
               {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable] &&
@@ -1785,13 +1566,27 @@ export default function PrivateRoutePreview(textas) {
             {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable] &&
             allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
               .additionalPoints[currentAddPointIdInList] ? (
-              <>
-                <div>
+              <div
+                className="additional-content-table"
+                style={{
+                  margin: "auto",
+                  width: "90%",
+                  border: "2px solid black",
+                  borderRadius: "10px",
+                  boxShadow: "inset 5px 10px 50px rgba(253, 188, 70, 0.3)",
+                  backgroundColor: "rgba(253, 255, 255, 0.)",
+                  fontWeight: "bold",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    margin: "2px 15%",
+                  }}
+                >
+                  <p>Place title: </p>
                   <p>
-                    {/* {console.log(
-                  allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
-                    .additionalPoints[currentAddPointIdInList]
-                )} */}
                     {
                       allRoutePointsDescriptions[
                         choosenRouteMarkForAdditionalTable
@@ -1800,7 +1595,14 @@ export default function PrivateRoutePreview(textas) {
                     }
                   </p>
                 </div>
-                <div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    margin: "2px 15%",
+                  }}
+                >
+                  <p>Rating: </p>
                   <p>
                     {
                       allRoutePointsDescriptions[
@@ -1810,17 +1612,30 @@ export default function PrivateRoutePreview(textas) {
                     }
                   </p>
                 </div>
-                <p>More information: </p>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html:
-                      allRoutePointsDescriptions[
-                        choosenRouteMarkForAdditionalTable
-                      ].additionalPoints[currentAddPointIdInList]
-                        .additionalPointPlaceRefToMaps,
-                  }}
-                ></div>
-              </>
+                {allRoutePointsDescriptions[choosenRouteMarkForAdditionalTable]
+                  .additionalPoints[currentAddPointIdInList]
+                  .additionalPointPlaceRefToMaps && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      margin: "2px 15%",
+                    }}
+                  >
+                    <p>More information: </p>
+                    <div
+                      style={{ margin: "4px" }}
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          allRoutePointsDescriptions[
+                            choosenRouteMarkForAdditionalTable
+                          ].additionalPoints[currentAddPointIdInList]
+                            .additionalPointPlaceRefToMaps,
+                      }}
+                    ></div>
+                  </div>
+                )}
+              </div>
             ) : (
               <p>No Content</p>
             )}
@@ -1941,6 +1756,7 @@ export default function PrivateRoutePreview(textas) {
             color: "#000000",
             fontWeight: "bold",
           }}
+          disabled={!isValidImageUrl ? "disabled" : ""}
           onClick={saveNewImage}
         >
           Save image
@@ -1964,7 +1780,6 @@ export default function PrivateRoutePreview(textas) {
           <Slider {...settings}>
             {allImagesUrlsForRoute.map((image, i) => (
               <div key={i}>
-                {/* currentIndex */}
                 <img
                   style={{
                     display: "block",
