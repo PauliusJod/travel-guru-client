@@ -1326,6 +1326,7 @@ export default function PrivateRoutePreview(textas) {
           <div className="private-container-main-left top">
             <h1>{location.state.message.rCountry}</h1>
           </div>
+          {console.log(allRoutePointsDescriptions)}
           {allRoutePointsDescriptions.length > 5 && (
             <div className="private-container-main-left buttons">
               <div style={{ display: "block" }}>

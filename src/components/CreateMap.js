@@ -194,6 +194,7 @@ export default function CreateMap() {
   }
   function testPrint() {
     const wayptsForDB = [];
+    console.log(waypoints);
     waypoints.map((item) => {
       if (item.current === null) {
         return item;
@@ -290,6 +291,7 @@ export default function CreateMap() {
   };
   async function calculateRoute() {
     const fixedWaypoints2 = testPrint();
+    console.log(fixedWaypoints2);
     const arr = cleanUpInputArrayForRoute();
     const waypt = ValidateWaypoints(arr);
     setRerenderStateForDifferentPath(null);
@@ -355,6 +357,7 @@ export default function CreateMap() {
     });
 
     setSectionBetweenPoints(distancesBetween);
+    console.log(routeMarkersLocations);
     setRoutePoints(routeMarkersLocations);
     reloadDirectionsRenderer();
   }
@@ -375,6 +378,7 @@ export default function CreateMap() {
   const convertPointDescriptionsForDb = (savedPointsValues) => {
     const descForDB = [];
     savedPointsValues.map((item, i) => {
+      console.log("convertPointDescriptionsForDb", savedPointsValues.length);
       if (item === null) {
         //|| item === ""
         return item;
