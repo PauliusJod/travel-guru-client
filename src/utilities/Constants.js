@@ -1,4 +1,4 @@
-﻿const API_BASE_URL_DEVELOPMENT = "https://localhost:7233"; //https.. http.
+﻿const API_BASE_URL_DEVELOPMENT = "https://localhost:7233";
 
 const ENDPOINTS = {
   TO_HOME: "api/#",

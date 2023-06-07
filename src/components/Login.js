@@ -119,7 +119,7 @@ class Login extends Component {
                   <div className="form-group">
                     <label htmlFor="password">Password</label>
                     <Input
-                      type="text" // password
+                      type="password"
                       className="form-control"
                       name="password"
                       value={this.state.password}
@@ -144,7 +144,6 @@ class Login extends Component {
                     <div className="form-group">
                       <div className="alert alert-danger" role="alert">
                         <p>Wrong credentials</p>
-                        {/*{this.state.message}*/}
                       </div>
                     </div>
                   )}

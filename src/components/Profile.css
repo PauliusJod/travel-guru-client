@@ -40,7 +40,6 @@
 .profile-container-main .right button:hover {
   border: 1px solid rgb(255, 246, 238);
   border-radius: 15px;
-  /* background-color: rgb(255, 246, 238); */
   box-shadow: 0 0 10px #79fa79, 0 0 10px #eaf7a0, 0 0 10px #79fa79;
   transition-delay: 0.1s;
 }
@@ -54,21 +53,17 @@
 }
 
 .profile-container-main .right input {
-  /* background-color: #212121; */
   width: 80%;
   margin: 5px auto;
   max-width: 190px;
   height: 40px;
   padding: 10px;
-  /* text-align: center; */
   border: 2px solid white;
   border-radius: 5px;
-  /* box-shadow: 3px 3px 2px rgb(249, 255, 85); */
 }
 
 .profile-container-main .right input:focus {
   color: black;
-  /* background-color: #212121; */
   outline-color: #389e38;
   box-shadow: -3px -3px 3px #389e38;
   transition: 0.1s;

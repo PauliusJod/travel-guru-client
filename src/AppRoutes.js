@@ -1,7 +1,7 @@
 import { Home } from "./components/Home";
 import { useLocation, Navigate } from "react-router-dom";
 import MapExplorer from "./components/MapExplorer";
-import TestMap from "./components/TestMap";
+import CreateMap from "./components/CreateMap";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import MapsGallery from "./components/MapsGallery";
@@ -10,7 +10,6 @@ import Profile from "./components/Profile";
 import PrivateRoutePreview from "./components/PrivateRoutePreview";
 const RedirectToPreviewTripMap = () => {
   const location = useLocation();
-  console.log("dsdfsdffdsdfsfds");
 
   if (location.pathname.startsWith("/previewTripMap/")) {
     const itemRouteId = decodeURIComponent(location.pathname.split("/")[2]);
@@ -28,9 +27,8 @@ const RedirectToPreviewTripMap = () => {
       },
     };
     console.log("state", state);
-    return <Navigate to={`/previewTripMap`} state={state} replace />; // Redirect to PreviewTripMap with routeId as state
+    return <Navigate to={`/previewTripMap`} state={state} replace />;
   } else {
-    // Handle other cases if needed
     return null;
   }
 };
@@ -60,8 +58,8 @@ const AppRoutes = [
     element: <MapExplorer />,
   },
   {
-    path: "/testMap",
-    element: <TestMap />,
+    path: "/mapCreate",
+    element: <CreateMap />,
   },
   {
     path: "/register",
