@@ -291,6 +291,7 @@ export default function PrivateRoutePreview(textas) {
   };
   async function getMapPointsPlacesIds(results) {
     const allMapPlaces = [];
+    console.log(results);
     results.geocoded_waypoints.map((item) => {
       if (item === null) {
         return item;
@@ -306,7 +307,7 @@ export default function PrivateRoutePreview(textas) {
   async function getAllMapPointsLocations(allMapPlaces) {
     const geocoder = new google.maps.Geocoder();
     const promises = [];
-
+    console.log(allMapPlaces);
     for (let i = 0; i < allMapPlaces.length; i++) {
       const promise = new Promise((resolve, reject) => {
         geocoder.geocode(
@@ -368,6 +369,7 @@ export default function PrivateRoutePreview(textas) {
     }
   };
   const changeTextAreaValueByPoint = (item) => (event) => {
+    console.log(item);
     const centerPoint = {
       lat: allMapPlaces[item.pointOnRouteId].point_Location_X,
       lng: allMapPlaces[item.pointOnRouteId].point_Location_Y,
@@ -1326,15 +1328,34 @@ export default function PrivateRoutePreview(textas) {
           <div className="private-container-main-left top">
             <h1>{location.state.message.rCountry}</h1>
           </div>
-          {console.log(allRoutePointsDescriptions)}
+          {console.log("allMapPlaces", allMapPlaces)}
+          {console.log(
+            "allRoutePointsDescriptions",
+            allRoutePointsDescriptions
+          )}
           {allRoutePointsDescriptions.length > 5 && (
             <div className="private-container-main-left buttons">
               <div style={{ display: "block" }}>
                 {allRoutePointsDescriptions.map((item, indexas) => (
                   <>
-                    <button onClick={changeTextAreaValueByPoint(item)}>
-                      {/* {item.pointOnRouteId + 1} */}
-                      {item.pointId + 11}
+                    {/* <button onClick={changeTextAreaValueByPoint(item)}> */}
+                    {/* {item.pointOnRouteId + 1} */}
+                    {/* {item.pointId + 1} */}
+                    {/* {indexas + 1}
+                    </button> */}
+                    <button
+                      style={{
+                        backgroundColor:
+                          currentPointId === item.pointId ? "#17c3b2" : "",
+                      }}
+                      onClick={changeTextAreaValueByPoint(item)}
+                      title={
+                        allMapPlaces[item.pointOnRouteId]?.point_Name
+                          ? allMapPlaces[item.pointOnRouteId].point_Name
+                          : ""
+                      }
+                    >
+                      {indexas + 1}
                     </button>
                     {indexas === 4 ? <br /> : null}
                   </>

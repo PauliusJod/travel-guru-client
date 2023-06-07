@@ -248,6 +248,7 @@ export default function CreateMap() {
           return item;
         }
       });
+      console.log(wayptsForDB);
       setWaypointsForDB(wayptsForDB);
       return waypts;
     } else {
@@ -293,7 +294,9 @@ export default function CreateMap() {
     const fixedWaypoints2 = testPrint();
     console.log(fixedWaypoints2);
     const arr = cleanUpInputArrayForRoute();
+    console.log(arr);
     const waypt = ValidateWaypoints(arr);
+    console.log(waypt);
     setRerenderStateForDifferentPath(null);
     setRerenderStateForDifferentNeed("NONE");
     if (originRef.current.value === "" || destiantionRef.current.value === "") {
@@ -324,7 +327,7 @@ export default function CreateMap() {
     routeMarkersLocations.push({
       location: originRef.current.value,
     });
-    fixedWaypoints2.map((item) => {
+    waypt.map((item) => {
       routeMarkersLocations.push({
         location: item.location,
       });
@@ -333,9 +336,7 @@ export default function CreateMap() {
     routeMarkersLocations.push({
       location: destiantionRef.current.value,
     });
-    setSavePointInputValues(
-      Array.from({ length: fixedWaypoints2.length + 2 }).fill("")
-    );
+    setSavePointInputValues(Array.from({ length: waypt.length + 2 }).fill(""));
 
     setDirectionsResponse(results);
     setDirectionsRendererInfo(results);
@@ -418,7 +419,7 @@ export default function CreateMap() {
     });
     const exportData = {
       origin: originRef.current.value,
-      midWaypoints: fixedWaypoints,
+      midWaypoints: waypointsForDB, //fixedWaypoints,
       destiantion: destiantionRef.current.value,
     };
     if (routeNameValue.length <= 0) {
