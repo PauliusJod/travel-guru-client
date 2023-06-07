@@ -3,17 +3,12 @@ import {
   useJsApiLoader,
   GoogleMap,
   Marker,
-  Autocomplete,
   DirectionsRenderer,
-  // placesService,
-  InfoWindow,
-  Geocoder,
 } from "@react-google-maps/api";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./PreviewTripMap.css";
-import { Heading, SkeletonText, calc, flexbox } from "@chakra-ui/react";
-
+import { SkeletonText } from "@chakra-ui/react";
 import jwt_decode from "jwt-decode";
 import { CgProfile } from "react-icons/cg";
 import {
@@ -24,10 +19,12 @@ import {
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-export default function PreviewTripMap(textas) {
+export default function PreviewTripMap() {
+  const navigate = useNavigate();
+
   const centerPoint = { lat: 54.8985, lng: 23.9036 };
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyAmOOpkKLPbXQ4TnZYJ3xNw868ySAaoylA", //"AIzaSyClg0_pq0WTqIRVmRI10U2pQPZv7f5dQXQ", // "AIzaSyAiB_hv59Hb5MQol934V0jK-t9CVbc2JGY", //AIzaSyClg0_pq0WTqIRVmRI10U2pQPZv7f5dQXQ //process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey: "AIzaSyAmOOpkKLPbXQ4TnZYJ3xNw868ySAaoylA",
     libraries: ["geometry", "places"],
   });
   const google = window.google;
@@ -40,18 +37,13 @@ export default function PreviewTripMap(textas) {
   const [isPageLoaded, setIsPageLoaded] = useState(false);
   const [isPageContentLoaded, setIsPageContentLoaded] = useState(false);
   const [directionsRendererKey, setDirectionsRendererKey] = useState(1);
-  // const [mapRendererKey, setMapRendererKey] = useState(1);
-
   const [allRouteMidWaypoints, setAllRouteMidWaypoints] = useState(null);
-  const [allRouteSectionsDescriptions, setAllRouteSectionsDescriptions] =
-    useState(null);
   const [allRoutePointsDescriptions, setAllRoutePointsDescriptions] = useState(
     []
   );
   const [pointDescriptionValue, setPointDescriptionValue] = useState(null);
   const [allMapPlaces, setAllMapPlaces] = useState([]);
 
-  //--------------------------
   const [
     choosenRouteMarkForAdditionalTable,
     setChoosenRouteMarkForAdditionalTable,
@@ -59,18 +51,13 @@ export default function PreviewTripMap(textas) {
 
   const [additionalMarkerDescription, setAdditionalMarkerDescription] =
     useState("");
-
   const [allImagesUrlsForRoute, setAllImagesUrlsForRoute] = useState([]);
   const [allRecommendationsUrlsForRoute, setAllRecommendationsUrlsForRoute] =
     useState([]);
   const [allCommentsForRoute, setAllCommentsForRoute] = useState(null);
-
   const [additionalPointsFromDB, setAdditionalPointsFromDB] = useState([]);
-  //--------------------------
   const [expanded, setExpanded] = useState(false);
-
   const [currentAddPointIdInList, setCurrentAddPointIdInList] = useState(0);
-
   const [currentPointId, setCurrentPointId] = useState(0);
   const [choosenAdditionalMark, setChoosenAdditionalMark] = useState(null);
 
@@ -79,15 +66,12 @@ export default function PreviewTripMap(textas) {
   };
   const [userName, setUserName] = useState(null);
   const settings = {
-    // className: "preview-images-container", // gadina uzkrovima
     dots: true,
     dotsClass: "slick-dots",
     accessibility: true,
     adaptiveHeight: false,
     infinite: true,
     speed: 500,
-    // autoplay: false,
-    // autoplaySpeed: 3000,
     centerMode: true,
     slidesToShow: 1,
     initialSlide: 1,
@@ -96,17 +80,19 @@ export default function PreviewTripMap(textas) {
   };
 
   const [error, setError] = useState(null);
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    const userInfo = jwt_decode(user.accessToken);
+    if (user == null) {
+      navigate("/");
+    } else {
+      const userInfo = jwt_decode(user.accessToken);
+      setUserName(
+        userInfo["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]
+      );
+    }
 
-    setUserName(
-      userInfo["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]
-    );
-
-    console.log("useEffect");
     async function GetMidWaypointsFromDatabase() {
-      console.log("aaa");
       axios
         .get(
           "http://localhost:5113/api/troutes/" +
@@ -145,15 +131,11 @@ export default function PreviewTripMap(textas) {
           "/routepointsadditional"
       )
       .then((resp) => {
-        console.log(resp.data);
         const pointsDescFromDB = [];
         resp.data.map((item) => {
           if (item.current === null) {
             return item;
           } else {
-            console.log(item.AddinionalPointMarks);
-            // let additionalPoints = [];
-            // additionalPoints = [...item.AddinionalPointMarks];
             let additionalPoints =
               item.addinionalPointMarks != undefined
                 ? [...item.addinionalPointMarks]
@@ -167,7 +149,6 @@ export default function PreviewTripMap(textas) {
             return item;
           }
         });
-        console.log("GetPointsDescFromDatabase: ", pointsDescFromDB);
         setAllRoutePointsDescriptions(pointsDescFromDB);
         setIsPageContentLoaded(true);
       });
@@ -181,12 +162,10 @@ export default function PreviewTripMap(textas) {
       )
       .then((resp) => {
         const additionalPointsFromDBTemp = [];
-        console.log(resp.data);
         resp.data.map((item) => {
           if (item.current === null) {
             return item;
           } else {
-            //pointId: pointIdIsEditing, desc: "", lat: markerPosition.lat, lng: markerPosition.lng
             additionalPointsFromDBTemp.push({
               pointId: item.troutePointDescriptionpointId,
               additionalPointInformation: item.additionalPointInformation,
@@ -201,15 +180,10 @@ export default function PreviewTripMap(textas) {
           }
         });
         setAdditionalPointsFromDB(additionalPointsFromDBTemp);
-        console.log(
-          "GetAdditionalPointsFromDatabase",
-          additionalPointsFromDBTemp
-        );
       })
       .catch((err) => console.log("err", err));
   }
   async function GetImagesUrlsFromDatabase() {
-    // console.log("GetImagesUrlsFromDatabase");
     axios
       .get(
         "http://localhost:5113/api/troutes/" +
@@ -217,7 +191,6 @@ export default function PreviewTripMap(textas) {
           "/imageurl"
       )
       .then((resp) => {
-        // console.log("-----------------------------------------", resp.data);
         const imagesUrlsFromDB = [];
         resp.data.map((item) => {
           if (item.current === null) {
@@ -229,9 +202,7 @@ export default function PreviewTripMap(textas) {
             return item;
           }
         });
-        // console.log("GetImagesUrlsFromDatabase: ", imagesUrlsFromDB);
         setAllImagesUrlsForRoute(imagesUrlsFromDB);
-        // setIsPageContentLoaded(true);
       });
   }
   async function GetRecommendationsUrlsFromDatabase() {
@@ -242,7 +213,6 @@ export default function PreviewTripMap(textas) {
           "/recommendationurl"
       )
       .then((resp) => {
-        console.log("recommendations: ", resp.data);
         const recommendationsUrlsFromDB = [];
         resp.data.map((item) => {
           if (item.current === null) {
@@ -267,7 +237,6 @@ export default function PreviewTripMap(textas) {
           location.state.message.routeId
       )
       .then((resp) => {
-        // console.log("recommendations: ", resp.data);
         const commentsFromDB = [];
         resp.data.map((item) => {
           if (item.current === null) {
@@ -291,8 +260,6 @@ export default function PreviewTripMap(textas) {
           }
         });
         setAllCommentsForRoute(commentsFromDB);
-
-        // setIsPageContentLoaded(true);
       });
   }
   const onMapLoad = (map) => {
@@ -300,8 +267,6 @@ export default function PreviewTripMap(textas) {
     testas();
   };
   async function getMapPointsPlacesIds(results) {
-    //Setup all marked places ids
-    console.log("results", results);
     const allMapPlaces = [];
     results.geocoded_waypoints.map((item) => {
       if (item === null) {
@@ -350,13 +315,12 @@ export default function PreviewTripMap(textas) {
     try {
       if (isLoaded) {
         const data = location.state.message;
-        if (data.origin === "" || data.destination === "") {
+        console.log("origin,dest", data.rOrigin, "+++++", data.rDestination);
+        if (data.rOrigin === "" || data.rDestination === "") {
           return;
         }
-        // console.log("allRouteMidWaypoints---", allRouteMidWaypoints);
         // eslint-disable-next-line no-undef
         const directionsService = new google.maps.DirectionsService();
-        // console.log("directionsService", directionsService);
         const results = await directionsService.route({
           origin: data.rOrigin,
           waypoints: allRouteMidWaypoints,
@@ -383,14 +347,10 @@ export default function PreviewTripMap(textas) {
     }
   };
   const changeTextAreaValueByPoint = (item) => (event) => {
-    // console.log("item", item);
     const centerPoint = {
       lat: allMapPlaces[item.pointOnRouteId].point_Location_X,
       lng: allMapPlaces[item.pointOnRouteId].point_Location_Y,
     };
-    // console.log(item.pointOnRouteId);
-    // document.getElementById("additional-show").style.display = "block";
-    // console.log("item", item);
     setCenterByPoint(centerPoint);
     setZoomByPoint(7);
     setCurrentPointId(item.pointId);
@@ -405,8 +365,6 @@ export default function PreviewTripMap(textas) {
     }
   };
   const targetExtraPointOnMap = (item, id) => {
-    console.log("item", item);
-    console.log("id", id);
     const centerPoint = {
       lat: item.additionalPointCoordX,
       lng: item.additionalPointCoordY,
@@ -424,12 +382,8 @@ export default function PreviewTripMap(textas) {
       document.getElementById("add-m-d").value =
         item.additionalPointInformation;
     }
-    // reloadMapRenderer();
   };
 
-  // const reloadMapRenderer = () => {
-  //   setMapRendererKey((prevKey) => prevKey + 1);
-  // };
   function handleAdditionalMarkerDescription() {
     const val = document.getElementById("add-m-d").value;
     setAdditionalMarkerDescription({
@@ -471,6 +425,21 @@ export default function PreviewTripMap(textas) {
         document.getElementById("c-f").value = "";
       });
   };
+  const share = () => {
+    navigator.share({
+      title: "Check out this route!",
+      text: "Route share link",
+      url:
+        "http://localhost:3000/previewTripMap/" +
+        location.state.message.routeId +
+        "/" +
+        location.state.message.rName +
+        "/" +
+        location.state.message.rOrigin +
+        "/" +
+        location.state.message.rDestination,
+    });
+  };
   const location = useLocation();
   if (!isLoaded) {
     return <SkeletonText />;
@@ -486,10 +455,13 @@ export default function PreviewTripMap(textas) {
       <h1 style={{ display: "flex", width: "100%", justifyContent: "center" }}>
         {location.state.message.rName}
       </h1>
+      <div className="share-button">
+        <button onClick={share}>Share</button>
+      </div>
       <div className="view-container-main">
         <div className="view-container-main-left">
           <div className="view-container-main-left top">
-            <h1>{location.state.message.rName}</h1>
+            <h4>{location.state.message.rName}</h4>
           </div>
           <div className="view-container-main-left buttons">
             {allRoutePointsDescriptions.map((item) => (
@@ -507,82 +479,87 @@ export default function PreviewTripMap(textas) {
               </>
             ))}
           </div>
-          <textarea
-            placeholder="There is no content!"
-            value={pointDescriptionValue}
-          />
-          <div
-            style={{
-              position: "absolute",
-              bottom: "0px",
-              textAlign: "center",
-              width: "100%",
-            }}
-          >
-            <h3>Recommendations</h3>
-            {allRecommendationsUrlsForRoute && (
-              <div
-                style={{
-                  display: "block",
-
-                  border: "1px solid white",
-                  width: "80%",
-                  borderRadius: "10px",
-                  backgroundColor: "rgba(255,255,255,0.4)",
-                  boxShadow: "inset 2px 0px 5px #f5e384",
-                  maxHeight:
-                    allRecommendationsUrlsForRoute.length > 4
-                      ? "120px"
-                      : "none",
-                  overflowY:
-                    allRecommendationsUrlsForRoute.length > 4
-                      ? "scroll"
-                      : "none",
-                  margin:
-                    allRecommendationsUrlsForRoute.length > 4
-                      ? "0px auto"
-                      : "0px auto",
-                }}
-              >
-                {allRecommendationsUrlsForRoute.map((recommendation, i) => (
-                  <div
-                    style={{
-                      display: "flex",
-                      width: "70%",
-                      margin: "0px auto",
-                      justifyContent: "space-between",
-                    }}
-                    key={i}
-                  >
-                    <p
-                      style={{
-                        margin: "0px 0px 4px",
-                        maxWidth:
-                          recommendation.rRecommendationUrlLink.length > 30
-                            ? "250px"
-                            : "none",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                      title={recommendation.rRecommendationUrlLink}
-                      alt={`Recommendation ${i}`}
-                    >
-                      {recommendation.rRecommendationUrlLink}
-                    </p>
-                  </div>
-                ))}
-              </div>
+          {pointDescriptionValue != null &&
+            pointDescriptionValue.length > 0 && (
+              <textarea
+                placeholder="There is no content!"
+                value={pointDescriptionValue}
+              />
             )}
-            <p></p>
-          </div>
+          {allRecommendationsUrlsForRoute.length > 0 && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: "0px",
+                textAlign: "center",
+                width: "100%",
+              }}
+            >
+              <h3>Recommendations</h3>
+              {allRecommendationsUrlsForRoute && (
+                <div
+                  style={{
+                    display: "block",
+
+                    border: "1px solid white",
+                    width: "80%",
+                    borderRadius: "10px",
+                    backgroundColor: "rgba(255,255,255,0.4)",
+                    boxShadow: "inset 2px 0px 5px #f5e384",
+                    maxHeight:
+                      allRecommendationsUrlsForRoute.length > 4
+                        ? "120px"
+                        : "none",
+                    overflowY:
+                      allRecommendationsUrlsForRoute.length > 4
+                        ? "scroll"
+                        : "none",
+                    margin:
+                      allRecommendationsUrlsForRoute.length > 4
+                        ? "0px auto"
+                        : "0px auto",
+                  }}
+                >
+                  {allRecommendationsUrlsForRoute.map((recommendation, i) => (
+                    <div
+                      style={{
+                        display: "flex",
+                        width: "70%",
+                        margin: "0px auto",
+                        justifyContent: "space-between",
+                      }}
+                      key={i}
+                    >
+                      <p
+                        style={{
+                          margin: "0px 0px 4px",
+                          maxWidth:
+                            recommendation.rRecommendationUrlLink.length > 30
+                              ? "250px"
+                              : "none",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                        title={recommendation.rRecommendationUrlLink}
+                        alt={`Recommendation ${i}`}
+                      >
+                        {recommendation.rRecommendationUrlLink}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p></p>
+            </div>
+          )}
         </div>
         <div className="view-container-main-right">
           {isPageContentLoaded && (
             <>
               {console.log("sddsa", zoomByPoint)}
               <GoogleMap
-                // key={mapRendererKey}
                 center={centerByPoint || centerPoint}
                 zoom={zoomByPoint ? zoomByPoint : 6}
                 mapContainerClassName="view-map-container"
@@ -677,7 +654,9 @@ export default function PreviewTripMap(textas) {
                       justifyContent: "space-between",
                     }}
                   >
-                    <p>Place title</p>
+                    <p style={{ fontWeight: "bold", textAlign: "left" }}>
+                      Place title
+                    </p>
                     <p>{choosenAdditionalMark.additionalPointPlaceName}</p>
                   </div>
                 )}
@@ -690,7 +669,9 @@ export default function PreviewTripMap(textas) {
                       justifyContent: "space-between",
                     }}
                   >
-                    <p>Place rating</p>
+                    <p style={{ fontWeight: "bold", textAlign: "left" }}>
+                      Place rating
+                    </p>
                     <p style={{ textAlign: "end" }}>
                       {choosenAdditionalMark.additionalPointPlaceRating}
                     </p>
@@ -704,7 +685,9 @@ export default function PreviewTripMap(textas) {
                       justifyContent: "space-between",
                     }}
                   >
-                    <p>More information: </p>
+                    <p style={{ fontWeight: "bold", textAlign: "left" }}>
+                      More information:{" "}
+                    </p>
                     <div
                       dangerouslySetInnerHTML={{
                         __html:
@@ -725,6 +708,7 @@ export default function PreviewTripMap(textas) {
               placeholder="There is no content!"
               defaultValue={""}
               onChange={handleAdditionalMarkerDescription}
+              disabled
             ></textarea>
           </div>
         </div>
@@ -768,7 +752,6 @@ export default function PreviewTripMap(textas) {
                   <div className="comment add-left">
                     <CgProfile size={25} style={{ margin: "auto" }}></CgProfile>
                     <p style={{ fontWeight: 500 }}>{item.userName}</p>
-                    {console.log(item)}
                     <p>{item.commentDate}</p>
                   </div>
                   <div

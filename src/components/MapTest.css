@@ -7,7 +7,7 @@
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   background-color: #e2e2e2;
   outline-offset: 3px;
-  padding: 10px 1rem;
+  padding: 0px 1rem;
   transition: 0.25s;
 }
 
@@ -25,7 +25,7 @@
 }
 .route-name-button button {
   position: relative;
-  background-color: rgb(53, 123, 230);
+  background-color: rgb(100, 115, 252);
   border-radius: 5px;
   box-shadow: rgb(18, 118, 121) 0px 4px 0px 0px;
   padding: 15px;
@@ -42,10 +42,6 @@
 }
 .route-name-button button:hover {
   -webkit-transform: scale(0.9);
-}
-
-.route-name-button button:hover {
-  /* transform: rotate(40deg); */
 }
 
 .route-name-button button::before {
@@ -69,7 +65,7 @@
 
 .route-save-style {
   display: flex;
-  margin: 20px auto 10px;
+  margin: 10px auto 10px;
   flex-wrap: wrap;
   justify-content: center;
   align-content: center;
@@ -82,11 +78,9 @@
   padding: 15px;
   background-repeat: no-repeat;
   box-sizing: border-box;
-  width: 220px;
-  height: 70px;
   color: #fff;
   border: none;
-  font-size: 20px;
+  font-size: 18px;
   transition: all 0.3s ease-in-out;
   z-index: 1;
   overflow: hidden;
@@ -96,7 +90,7 @@
 }
 .route-save-style button::before {
   content: "";
-  background-color: rgb(50, 80, 248);
+  background-color: rgb(100, 115, 252);
   width: 0;
   height: 100%;
   position: absolute;
@@ -110,6 +104,11 @@
 .route-save-style button:hover::before {
   width: 100%;
 }
+.route-save-style.disabled {
+  background-color: rgb(128, 128, 128);
+  opacity: 0.8;
+  cursor: not-allowed;
+}
 
 .pointInfoOpenedInput {
   display: flex;
@@ -122,4 +121,23 @@
 }
 #country-select option {
   width: 150px;
+}
+
+.box {
+  width: fit-content;
+  max-width: 80%;
+  margin: 5px 20px;
+}
+
+.box input {
+  padding: 11px 10px;
+  font-size: 0.75rem;
+  width: 250px;
+  border: 2px #818cf8 solid;
+  border-radius: 10px;
+  background: #e8e8e8;
+}
+
+.box input:focus {
+  outline: none;
 }

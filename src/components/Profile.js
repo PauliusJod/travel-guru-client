@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { GoogleMap, useLoadScript, Marker } from "@react-google-maps/api";
 import axios from "axios";
 import Constants from "../utilities/Constants";
 
 import { useNavigate } from "react-router-dom";
-import myImage from "./images/gps.png";
 import myImage2 from "./images/pexels-quang-nguyen-vinh-2166711.jpg";
-import PreviewTripMap from "./PreviewTripMap";
 import "./Profile.css";
 import jwt_decode from "jwt-decode";
 
@@ -38,21 +35,6 @@ export default function Profile() {
     GetRoutesFromDatabase();
   }, []);
 
-  //   function handleClick(item) {
-  //     navigate("/previewTripMap", { state: { message: item } });
-  //   }
-  // --------------- FRONT VALIDATIONS -----------------
-  const vpassword = (value) => {
-    if (value.length < 6 || value.length > 40) {
-      return (
-        <div className="alert alert-danger" role="alert">
-          The password must be between 6 and 40 characters.
-        </div>
-      );
-    }
-  };
-
-  // --------------- --------------- -----------------
   const togglePaswordChangeOption = () => {
     if (enablePasswordChange) {
       setEnablePasswordChange(false);
@@ -67,7 +49,7 @@ export default function Profile() {
       setEnableEmailChange(true);
     }
   };
-  // INPUT CHANGE HANDLERS------------------------------------------
+
   function handlePasswordCurrentInputChange(event) {
     setPasswordCurrentInputValue(event.target.value);
   }
@@ -75,10 +57,9 @@ export default function Profile() {
     setPasswordNewInputValue(event.target.value);
   }
   function handleEmailNewInputChange(event) {
-    // console.log("EMAIL: ", event.target.value);
     setNewEmailInputValue(event.target.value);
   }
-  //------- START CHANGE PASS/EMAIL ------------------------------------------------
+
   const handleChangePassword = (e) => {
     axios
       .put(Constants.API_URL_UPDATE_PASSWORD, {
@@ -89,12 +70,10 @@ export default function Profile() {
       .then((response) => {
         if (response.data.accessToken) {
           localStorage.setItem("user", JSON.stringify(response.data));
-          // console.log("----", localStorage);
         }
 
         return response.data;
       });
-    // console.log("handleChangeEmail");
   };
   const handleChangeEmail = (e) => {
     axios
@@ -105,18 +84,13 @@ export default function Profile() {
       .then((response) => {
         if (response.data.accessToken) {
           localStorage.setItem("user", JSON.stringify(response.data));
-          // console.log("----", localStorage);
         }
 
         return response.data;
       });
-
-    // console.log("handleChangeEmail");
   };
-  //-------------------------------------
   function handleClick(item) {
     navigate("/privateRoutePreview", { state: { message: item } });
-    console.log("handleClick", item);
   }
   return (
     <>
@@ -126,38 +100,37 @@ export default function Profile() {
             <div className="grid-container">
               {allUserCreatedRoutes.map((oneUserCreatedRoute) => (
                 <div key={oneUserCreatedRoute.routeId}>
-                  {console.log(oneUserCreatedRoute)}
                   {oneUserCreatedRoute.rImagesUrl != null &&
                   oneUserCreatedRoute.rImagesUrl != undefined ? (
-                    <>
+                    <div>
                       <img
                         key={oneUserCreatedRoute.routeId}
                         src={oneUserCreatedRoute.rImagesUrl[0].rImagesUrlLink}
                         alt={oneUserCreatedRoute.routeId}
                         width="150"
                         height="150"
-                        style={{ objectFit: "cover" }}
+                        style={{ objectFit: "cover", cursor: "pointer" }}
                         onClick={() => handleClick(oneUserCreatedRoute)}
                       ></img>
                       <p style={{ fontSize: "20px", margin: "5px" }}>
                         {oneUserCreatedRoute.rName}
                       </p>
-                    </>
+                    </div>
                   ) : (
-                    <>
+                    <div>
                       <img
                         key={oneUserCreatedRoute.routeId}
                         src={myImage2}
                         alt={oneUserCreatedRoute.routeId}
                         width="150"
                         height="150"
-                        style={{ objectFit: "cover" }}
+                        style={{ objectFit: "cover", cursor: "pointer" }}
                         onClick={() => handleClick(oneUserCreatedRoute)}
                       ></img>
                       <p style={{ fontSize: "20px", margin: "5px" }}>
                         {oneUserCreatedRoute.rName}
                       </p>
-                    </>
+                    </div>
                   )}
                 </div>
               ))}
@@ -170,7 +143,7 @@ export default function Profile() {
               <>
                 <input
                   className="right"
-                  type="text"
+                  type="password"
                   id="passwordInput1"
                   placeholder="Current Password"
                   onChange={handlePasswordCurrentInputChange}
@@ -180,10 +153,9 @@ export default function Profile() {
                     <p> Too short </p>
                   </div>
                 )}
-                {/* type="password" */}
                 <input
                   className="right"
-                  type="text"
+                  type="password"
                   id="passwordInput2"
                   placeholder="New Password"
                   onChange={handlePasswordNewInputChange}
@@ -193,7 +165,6 @@ export default function Profile() {
                     <p> Too short </p>
                   </div>
                 )}
-                {/* type="password" */}
                 <button style={{ width: "50%" }} onClick={handleChangePassword}>
                   ChangePassword
                 </button>
