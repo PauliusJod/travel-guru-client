@@ -29,12 +29,13 @@ import axios from "axios";
 import countries from "./const/countries.json";
 
 import "./MapTest.css";
+const apiKey = process.env.REACT_APP_API_KEY;
 
 export default function CreateMap() {
   const navigate = useNavigate();
   const centerPoint = { lat: 54.8985, lng: 23.9036 };
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyAmOOpkKLPbXQ4TnZYJ3xNw868ySAaoylA",
+    googleMapsApiKey: apiKey,
     libraries: ["geometry", "places"],
   });
   const google = window.google;

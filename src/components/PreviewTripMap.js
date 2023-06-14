@@ -19,12 +19,13 @@ import {
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+const apiKey = process.env.REACT_APP_API_KEY;
 export default function PreviewTripMap() {
   const navigate = useNavigate();
 
   const centerPoint = { lat: 54.8985, lng: 23.9036 };
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyAmOOpkKLPbXQ4TnZYJ3xNw868ySAaoylA",
+    googleMapsApiKey: apiKey,
     libraries: ["geometry", "places"],
   });
   const google = window.google;

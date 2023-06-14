@@ -34,10 +34,12 @@ import "slick-carousel/slick/slick-theme.css";
 
 import jwt_decode from "jwt-decode";
 import "./PrivateRoutePreview.css";
+
+const apiKey = process.env.REACT_APP_API_KEY;
 export default function PrivateRoutePreview(textas) {
   const centerPoint = { lat: 54.8985, lng: 23.9036 };
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyAmOOpkKLPbXQ4TnZYJ3xNw868ySAaoylA",
+    googleMapsApiKey: apiKey,
     libraries: ["geometry", "places"],
     utcOffset: -240,
   });
